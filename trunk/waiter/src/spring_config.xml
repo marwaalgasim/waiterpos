@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:db.connect.properties" />
+	</bean>
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+		<property name="persistenceUnitName" value="waiter" />
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.connection.url">${connectionURLPrefix}${dbDir};${connectionURLParams}</prop>
+				<prop key="hibernate.connection.driver_class">${connectionDriverName}</prop>
+				<prop key="hibernate.connection.username">${connectionUserName}</prop>
+				<prop key="hibernate.connection.password">${connectionPassword}</prop>
+				<prop key="hibernate.dialect">${connectionDialect}</prop>
+				<prop key="hibernate.hbm2ddl.auto">${hbm2ddl.auto}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="jpaTemplate" class="org.springframework.orm.jpa.JpaTemplate">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+		<property name="jpaDialect" ref="jpaDialect" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean id="annotationTransactionAspect"
+		class="org.springframework.transaction.aspectj.AnnotationTransactionAspect"
+		factory-method="aspectOf">
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+
+	<!--
+		*****************************************************************************************
+	-->
+
+	<bean name="categoryService" class="ua.cn.yet.waiter.service.impl.CategoryServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
+	
+	<bean name="itemService" class="ua.cn.yet.waiter.service.impl.ItemServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
+	
+	<bean name="userService" class="ua.cn.yet.waiter.service.impl.UserServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+		<property name="orderService" ref="orderService"/>
+	</bean>
+	
+	<bean name="orderService" class="ua.cn.yet.waiter.service.impl.OrderServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
+	
+	<bean name="orderedItemService" class="ua.cn.yet.waiter.service.impl.OrderedItemServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
+	
+	<bean name="printingService" class="ua.cn.yet.waiter.service.print.lkt210.PrintServiceLKT210"/>
+
+	<!--
+		*****************************************************************************************
+	-->
+
+
+</beans>

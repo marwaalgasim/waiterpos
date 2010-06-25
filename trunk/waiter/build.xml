@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<project name="Waiter" default="main" basedir=".">
+
+	<property name="aspectjtoolsPath" value="lib/aspectjtools.jar" />
+	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties" classpath="${aspectjtoolsPath}" />
+
+
+	<buildnumber file="src/ua/cn/yet/waiter/build_number.properties" />
+	<loadproperties srcFile="src/ua/cn/yet/waiter/build_number.properties" />
+	<tstamp />
+
+	<property name="VERSION" value="${major.version.number}.${minor.version.number}.${build.number}" />
+	<property name="SPEC_VERSION" value="${major.version.number}.${minor.version.number}" />
+	<property name="build" value="bin" />
+	<property name="dist" value="dist" />
+	<property name="dist.libs" value="${dist}/libs" />
+	<property name="dist.pics" value="${dist}/pics" />
+	<property name="dist.config" value="${dist}/config" />
+	<property name="libs" value="lib/" />
+	<property name="appName" value="waiter" />
+	<property name="jarFile" value="${dist.libs}/${appName}.jar" />
+	<property name="manifest" value="${dist}/MANIFEST.MF" />
+
+	<property environment="env" />
+
+	<property name="debuglevel" value="source,lines,vars" />
+
+	<path id="project.classpath">
+		<pathelement location="bin" />
+		<fileset dir="${libs}" includes="*.jar" />
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+		<mkdir dir="${dist.libs}" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="build" depends="init">
+		<echo message="${ant.project.name}: ${ant.file}" />
+
+		<iajc destdir="${build}" debug="true" debuglevel="${debuglevel}" source="1.6" target="1.6" crossrefs="true" showweaveinfo="false">
+			<aspectpath location="lib/spring-aspects.jar" />
+			<src path="src" />
+			<exclude name="**/build/**" />
+			<classpath refid="project.classpath" />
+		</iajc>
+
+		<!--	
+		<javac destdir="${build}" debuglevel="${debuglevel}" target="${target}" source="${source}">
+			<src path="src" />
+			<exclude name="**/build/**" />
+			<classpath refid="project.classpath" />
+		</javac>
+	-->
+		<copy todir="${build}">
+			<fileset dir="src">
+				<include name="**/images/*" />
+				<include name="**/*.properties" />
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="help">
+		<echo message="Please run: $ ant -v -projecthelp" />
+	</target>
+
+	<target name="create-manifest" depends="init" description="Creating manifest file">
+
+
+		<echo message="Creating main manifest file in ${manifest}" />
+		<manifest file="${manifest}">
+			<attribute name="Built-By" value="Yuriy E. Tkach" />
+			<attribute name="Built-On" value="${TODAY}" />
+			<!--<attribute name="Main-Class" value="ua.cn.yet.waiter.WaiterDBEditApp" />
+			<attribute name="SplashScreen-Image" value="ua/cn/yet/waiter/ui/images/owl_big.png" />
+			<attribute name="Class-Path" value="${jar.classpath}" /> -->
+
+			<section name="${ant.project.name}">
+				<attribute name="Specification-Title" value="${ant.project.name}" />
+				<attribute name="Specification-Version" value="${SPEC_VERSION}" />
+				<attribute name="Specification-Vendor" value="Yuriy E. Tkach" />
+				<attribute name="Implementation-Title" value="${appName}-${VERSION}" />
+				<attribute name="Implementation-Version" value="${VERSION}" />
+				<attribute name="Implementation-Vendor" value="Yuriy E. Tkach" />
+			</section>
+
+		</manifest>
+	</target>
+
+	<target name="jar" depends="clean, build, create-manifest" description="Creating single main jar with only program files">
+		<jar destfile="${jarFile}" basedir="${build}" index="true" manifest="${manifest}" />
+		<delete file="${manifest}" />
+	</target>
+
+	<target name="probe_for_chmod">
+		<condition property="found.chmod">
+			<available file="chmod" filepath="${env.PATH}" />
+		</condition>
+	</target>
+	
+	<target name="change_run_rights" if="found.chmod">
+		<exec executable="chmod">
+			<arg value="+x"/>
+			<arg value="${dist}/${appName}.sh"/>
+		</exec>
+	</target>
+
+	<target name="main" depends="jar, probe_for_chmod">
+
+		<mkdir dir="${dist.pics}" />
+		
+		<mkdir dir="${dist.config}" />
+		<copy todir="${dist.config}">
+			<fileset dir="config">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<copy file="COPYRIGHT" tofile="${dist}/license" overwrite="true" />
+
+		<copy file="src/ua/cn/yet/waiter/ui/images/owl_big.png" todir="${dist}/libs" overwrite="true" />
+
+		<copy file="scripts/run_script" tofile="${dist}/${appName}.sh" overwrite="true" />
+		
+		<antcall target="change_run_rights"/>
+
+		<copy file="scripts/run_script" tofile="${dist}/${appName}.bat" overwrite="true" />
+		
+		<copy todir="${dist}/libs">
+			<fileset dir="lib">
+				<include name="**/*" />
+				<exclude name="aspectjtools.jar" />
+			</fileset>
+		</copy>
+
+		<manifestclasspath property="jar.classpath" jarfile="${dist}/libs/jar.jar">
+			<classpath>
+				<fileset dir="${dist}/libs">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+		</manifestclasspath>
+		<jar destfile="${dist}/libs/classpath.jar">
+			<manifest>
+				<attribute name="Class-Path" value="${jar.classpath}" />
+			</manifest>
+		</jar>
+
+		<echo message="Distribution files located in ${dist}" />
+	</target>
+</project>
