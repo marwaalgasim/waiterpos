@@ -1,0 +1,25 @@
+REQUIREMENTS
+------------
+
+Applications:
+	- JRE 1.6.0 or above (http://java.sun.com) - needed for running the application
+	- JDK 1.6.0 or above (http://java.sun.com) - needed for building the application
+	- Ant 1.6 or above (http://ant.apache.org) - needed for building the application
+	
+Environment Variables:
+	- JAVA_HOME - must point to the JDK directory
+	- ANT_HOME - must point to the Ant directory
+	
+
+BUILDING
+--------
+
+To build source files simply type in the command line 
+(note, the /bin directory of Ant must be included in PATH environment variable):
+	ant build
+
+For cleaning, type:
+	ant clean
+	
+For creating distribution, type
+	ant main
