@@ -1,1 +1,0 @@
-java -DpicDir=pics -DdbDir=db -DconfigDir=config -splash:./libs/owl_big.png -cp ./libs/classpath.jar ua.cn.yet.waiter.WaiterApp
