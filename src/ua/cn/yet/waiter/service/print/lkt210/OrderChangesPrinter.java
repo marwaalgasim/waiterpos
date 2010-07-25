@@ -6,8 +6,15 @@ import java.awt.Graphics2D;
 import ua.cn.yet.waiter.model.LoggedChange;
 import ua.cn.yet.waiter.model.Order;
 
+/**
+ * Class that prints logged order changes.
+ * 
+ * @author n0weak
+ *
+ */
 public class OrderChangesPrinter extends LKT210Printer{
 	
+	/** Order which changes to print */
 	private Order order;
 	
 	public OrderChangesPrinter(Order order) {
