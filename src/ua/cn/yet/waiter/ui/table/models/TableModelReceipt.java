@@ -28,6 +28,10 @@ import ua.cn.yet.waiter.util.WaiterInstance;
 public class TableModelReceipt extends AbstractTableModel {
 
 	private static final Log log = LogFactory.getLog(TableModelReceipt.class);
+	
+	public static final int COLUMN_BTN_DEL = 6;
+	
+	public static final int COLUMN_BTN_EDIT = 5;
 
 	public static final int COLUMN_PRICE = 4;
 
@@ -54,7 +58,7 @@ public class TableModelReceipt extends AbstractTableModel {
 	 * Names of all columns
 	 */
 	private final String[] columnNames = { "Наименование", "Цена", "Масса",
-			"Кол-во", "Сумма" };
+			"Кол-во", "Сумма", "И", "У" };
 
 	private SortedSet<OrderedItem> items = new TreeSet<OrderedItem>();
 
@@ -306,6 +310,8 @@ public class TableModelReceipt extends AbstractTableModel {
 		OrderedItem item = getItemFromSet(rowIndex);
 
 		switch (columnIndex) {
+		case COLUMN_BTN_EDIT:
+		case COLUMN_BTN_DEL:
 		case COLUMN_COUNT:
 			return true;
 		case COLUMN_MASS:
