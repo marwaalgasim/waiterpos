@@ -1,7 +1,5 @@
 package ua.cn.yet.waiter;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -190,11 +188,15 @@ public class WaiterApp implements LoginListener, FormListener {
 	 * Cleaning up resources and exiting
 	 */
 	private void cleanUpAndExit() {
+		
+		/* No need if using PostgreSql
 		try {
 			DriverManager.getConnection("jdbc:derby:;shutdown=true");
 		} catch (SQLException e1) {
 			log.info(e1.getLocalizedMessage());
 		}
+		*/
+		
 		System.exit(0);
 	}
 

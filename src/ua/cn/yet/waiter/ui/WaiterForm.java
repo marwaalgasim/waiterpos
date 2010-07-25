@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.commons.lang.StringUtils;
 import org.bushe.swing.event.EventBus;
 
 import net.miginfocom.swing.MigLayout;
@@ -341,17 +342,43 @@ public class WaiterForm extends AbstractForm implements OrderTabListener {
 	 */
 	@Override
 	public void orderCanceled(OrderTab orderTab) {
-		try {
-			orderService.delEntity(orderTab.getOrder());
+		Exception generalException=null;
+		
+		Order order=orderTab.getOrder();
+		if(order.isPrinted()){
+			String reason = ReasonForDelInputDialog.getReason(this.frame);
+			if (StringUtils.isNotBlank(reason)) {
+				boolean doUpdate=order.markCanceled(reason);
+				if(doUpdate){
+					try {
+						orderService.save(order);
+						removeActiveTab();
+					} catch (Exception e) {
+						log.error("Failed to update order: " + order, e);
+						generalException=e;
+					}
+				}
+			}
+		}
+		
+		else{
+			try {
+				orderService.delEntity(orderTab.getOrder());
+				removeActiveTab();
+			} catch (Exception e) {
+				log.error("Failed to delete order: " + orderTab.getOrder(), e);
+				generalException=e;
 
-			removeActiveTab();
-
-		} catch (Exception e) {
-			log.error("Failed to delete order: " + orderTab.getOrder(), e);
-			JOptionPane.showMessageDialog(this.frame, e.getLocalizedMessage(),
+			}
+		}
+	
+		if(generalException!=null){
+			JOptionPane.showMessageDialog(this.frame, generalException.getLocalizedMessage(),
 					"Не получилось отменить заказ :(",
 					JOptionPane.ERROR_MESSAGE);
 		}
+			
+
 	}
 
 	/*
@@ -380,6 +407,22 @@ public class WaiterForm extends AbstractForm implements OrderTabListener {
 					.showMessageDialog(this.frame, e.getLocalizedMessage(),
 							"Не получилось закрыть заказ :(",
 							JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see ua.cn.yet.waiter.ui.OrderTabListener#orderPrinted(ua.cn.yet.waiter.ui.OrderTab)
+	 */
+	@Override
+	public void orderPrinted(OrderTab orderTab) {
+		Order order=orderTab.getOrder();
+		order.setPrinted(true);
+		try{
+			orderService.save(order);
+		} catch (Exception e) {
+			log.error("Failed to update order: " +order,e);
+			JOptionPane.showMessageDialog(orderTab,e.getLocalizedMessage(),
+					"Не получилось обновить состоянии заказа", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -460,4 +503,7 @@ public class WaiterForm extends AbstractForm implements OrderTabListener {
 		}
 
 	}
+
+	
+	
 }

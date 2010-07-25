@@ -15,17 +15,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
-import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.waiter.model.Category;
 import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OutputElement;
 import ua.cn.yet.waiter.service.CategoryService;
+import ua.cn.yet.waiter.service.OrderService;
 import ua.cn.yet.waiter.service.PrintingService;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.Utils;
@@ -69,7 +71,7 @@ public class OrderTab extends JPanel {
 		this.tabListener = tabListener;
 
 		AnnotationProcessor.process(this);
-
+		
 		printService = WaiterInstance.forId(WaiterInstance.PRINTING_SERVICE);
 
 		categoryService = WaiterInstance.forId(WaiterInstance.CATEGORY_SERVICE);
@@ -301,7 +303,9 @@ public class OrderTab extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (!order.getItems().isEmpty()) {
-				printService.printOrder(order);
+				if(printService.printOrder(order)){
+					tabListener.orderPrinted(OrderTab.this);
+				}
 			} else {
 				JOptionPane.showMessageDialog(OrderTab.this,
 						"Добавьте элементы в заказ, чтобы их распечатать.",

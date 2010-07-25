@@ -8,7 +8,7 @@ import javax.swing.JTable;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.ui.table.models.TableModelOrders;
 
-public class ColumnMarkDelRenderer extends BooleanColumnRenderer {
+public class ColumnChangedRenderer extends BooleanColumnRenderer {
 
 	private static final long serialVersionUID = 1L;
 
@@ -20,13 +20,13 @@ public class ColumnMarkDelRenderer extends BooleanColumnRenderer {
 			boolean isSelected, boolean hasFocus, int row, int column) {
 		Component rez = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
 				row, column);
-		
+				
 		int modelRow = table.convertRowIndexToModel(row);
 		TableModelOrders tableModel = (TableModelOrders) table.getModel();
 		Order order = tableModel.getOrderAt(modelRow);
-		if (order.isForDeletion()) {
-			((JLabel)rez).setToolTipText("<html><b>Причина для отмены/удаления:</b><br/>" + 
-					order.getForDeletionReason()+"</html>");
+		if (order.isChanged()) {
+			((JLabel)rez).setToolTipText("<html><b>Изменения заказа:</b><br/>" +
+					order.getLoggedChangesHtml()+"</html>");
 		} else {
 			((JLabel)rez).setToolTipText(null);
 		}

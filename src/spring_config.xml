@@ -19,7 +19,7 @@
 		<property name="persistenceUnitName" value="waiter" />
 		<property name="jpaProperties">
 			<props>
-				<prop key="hibernate.connection.url">${connectionURLPrefix}${dbDir};${connectionURLParams}</prop>
+				<prop key="hibernate.connection.url">${connectionURLPrefix}${dbDir}</prop>
 				<prop key="hibernate.connection.driver_class">${connectionDriverName}</prop>
 				<prop key="hibernate.connection.username">${connectionUserName}</prop>
 				<prop key="hibernate.connection.password">${connectionPassword}</prop>
@@ -71,6 +71,10 @@
 	</bean>
 	
 	<bean name="orderedItemService" class="ua.cn.yet.waiter.service.impl.OrderedItemServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
+	
+	<bean name="loggedChangeService" class="ua.cn.yet.waiter.service.impl.LoggedChangeServiceImpl">
 		<property name="jpaTemplate" ref="jpaTemplate" />
 	</bean>
 	

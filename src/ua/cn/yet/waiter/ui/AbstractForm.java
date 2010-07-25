@@ -21,7 +21,7 @@ public abstract class AbstractForm {
 
 	protected Log log = LogFactory.getLog(getClass());
 
-	private static String LOOKANDFEEL = "System";
+	private static String LOOKANDFEEL = "GTK+";
 
 	public static final boolean RIGHT_TO_LEFT = false;
 

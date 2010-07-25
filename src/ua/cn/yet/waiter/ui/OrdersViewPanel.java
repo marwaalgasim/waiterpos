@@ -1,6 +1,8 @@
 package ua.cn.yet.waiter.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +17,8 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -22,6 +26,7 @@ import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -33,6 +38,7 @@ import ua.cn.yet.waiter.service.PrintingService;
 import ua.cn.yet.waiter.ui.table.editors.BooleanColumnEditor;
 import ua.cn.yet.waiter.ui.table.editors.ColumnOrderDelEditor;
 import ua.cn.yet.waiter.ui.table.models.TableModelOrders;
+import ua.cn.yet.waiter.ui.table.renderers.ColumnChangedRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnDateRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnDelRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnMarkDelRenderer;
@@ -64,6 +70,7 @@ public class OrdersViewPanel extends JScrollPane {
 	}
 
 	private void createOrdersTable(boolean loadOrdersAfterCreation) {
+				
 		tableModelOrders = new TableModelOrders(SwingUtilities
 				.windowForComponent(this), waiter, loadOrdersAfterCreation);
 		tableOrders = new JTable(tableModelOrders);
@@ -102,8 +109,15 @@ public class OrdersViewPanel extends JScrollPane {
 
 		tableOrders.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() > 1) {
-					viewOrderItems();
+				if (e.getClickCount() > 1) {	
+					if(tableOrders.getSelectedColumn()==TableModelOrders.COLUMN_CHANGED &&
+						tableModelOrders.getOrderAt(tableOrders.convertRowIndexToModel(tableOrders.getSelectedRow())).isChanged()){
+						
+						viewChangesLog();
+					}
+					else{	
+						viewOrderItems();
+					}
 				}
 			}
 		});
@@ -167,6 +181,26 @@ public class OrdersViewPanel extends JScrollPane {
 		if (waiter != null) {
 			col.setCellEditor(new BooleanColumnEditor());
 		}
+		
+		col = table.getColumnModel()
+				.getColumn(TableModelOrders.COLUMN_CANCELLED);
+		render = new ColumnMarkDelRenderer();
+		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setMaxWidth(80);
+		col.setCellRenderer(render);
+		if (waiter != null) {
+			col.setCellEditor(new BooleanColumnEditor());
+		}
+		
+		col = table.getColumnModel()
+				.getColumn(TableModelOrders.COLUMN_CHANGED);
+		render = new ColumnChangedRenderer();
+		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setMaxWidth(80);
+		col.setCellRenderer(render);
+		if (waiter != null) {
+			col.setCellEditor(new BooleanColumnEditor());
+		}
 
 		if (null == waiter) {
 			col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_DEL);
@@ -189,6 +223,21 @@ public class OrdersViewPanel extends JScrollPane {
 			Order order = tableModelOrders.getOrderAt(modelRow);
 			if (order != null) {
 				new ItemsViewDialog(SwingUtilities.getWindowAncestor(this),
+						order);
+			}
+		}
+	}
+	
+	/**
+	 * Display dialog to view items of the order
+	 */
+	protected void viewChangesLog() {
+		int row = tableOrders.getSelectedRow();
+		if (row > -1) {
+			int modelRow = tableOrders.convertRowIndexToModel(row);
+			Order order = tableModelOrders.getOrderAt(modelRow);
+			if (order != null) {
+				new ChangesLogViewDialog(SwingUtilities.getWindowAncestor(this),
 						order);
 			}
 		}
@@ -253,6 +302,7 @@ public class OrdersViewPanel extends JScrollPane {
 		}
 
 	}
+	
 
 	/**
 	 * @return the sortByClosed
@@ -330,5 +380,73 @@ public class OrdersViewPanel extends JScrollPane {
 			int modelRow = tableOrders.convertRowIndexToModel(i);
 			tableModelOrders.setValueAt(true, modelRow, TableModelOrders.COLUMN_MARK_DEL);
 		}
+	}
+	
+	/**
+	 * Dialog to view changes log
+	 * 
+	 * @author n0weak
+	 */
+	private class ChangesLogViewDialog extends JDialog {
+
+		private static final long serialVersionUID = 1L;
+		
+		private PrintingService printService = WaiterInstance.forId(WaiterInstance.PRINTING_SERVICE);
+
+		public ChangesLogViewDialog(Window parent, final Order order) {
+			super(parent, "Заказ " + order.getTitle(),
+					ModalityType.APPLICATION_MODAL);
+
+			this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+			
+			JLabel label=new JLabel("<html>"+order.getLoggedChangesHtml()+"</html>");
+			
+			JScrollPane scrollPane=new JScrollPane(label);
+			this.add(scrollPane,BorderLayout.CENTER);
+			scrollPane.setBorder(new TitledBorder("Изменения заказа"));
+			
+			JPanel buttonsPanel=new JPanel();
+			buttonsPanel.setLayout(new FlowLayout());
+			
+			JButton btnPrint = new JButton("Печать");
+			btnPrint.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					printService.printOrderChanges(order);
+				}
+			});
+			
+			buttonsPanel.add(btnPrint);
+			btnPrint.setIcon(AbstractForm.createImageIcon("fileprint.png"));
+
+			JButton btnClose = new JButton("Закрыть");
+			btnClose.addActionListener(new ActionListener() {	
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					ChangesLogViewDialog.this.dispose();
+				}
+			});
+			
+			buttonsPanel.add(btnClose);
+			btnClose.setIcon(AbstractForm.createImageIcon("no.png"));
+
+			this.add(buttonsPanel,BorderLayout.SOUTH);
+			
+			Dimension dimension=label.getPreferredSize();
+			dimension.setSize(dimension.getWidth()+40, 
+					dimension.getHeight()+buttonsPanel.getPreferredSize().getHeight()+80);
+			
+			if(dimension.getHeight()>700){
+				dimension.setSize(dimension.getWidth(), 700);
+			}
+			
+			this.setPreferredSize(dimension);
+
+			
+			this.pack();
+			this.setLocationRelativeTo(parent);
+			this.setVisible(true);
+		}
+
 	}
 }

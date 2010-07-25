@@ -122,4 +122,12 @@ public class PrintServiceLKT210 implements PrintingService {
 		return printPrintable(new OrderReportPrinter(report));
 	}
 
+	@Override
+	public boolean printOrderChanges(Order order) {
+		if (log.isDebugEnabled()) {
+			log.debug("Printing order changes for order " + order.getId());
+		}
+		return printPrintable(new OrderChangesPrinter(order));
+	}
+
 }
