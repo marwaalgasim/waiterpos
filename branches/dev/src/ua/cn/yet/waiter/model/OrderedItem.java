@@ -36,6 +36,8 @@ public class OrderedItem extends AbstractItem {
 	@ManyToOne
 	@NotNull
 	private Order order;
+	
+
 
 	public OrderedItem() {
 		super();
@@ -178,4 +180,5 @@ public class OrderedItem extends AbstractItem {
 	public void setNewMass(int newMass) {
 		this.newMass = newMass;
 	}
+	
 }

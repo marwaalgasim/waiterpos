@@ -173,10 +173,10 @@ public class LoginForm extends AbstractForm {
 		try {
 			UserService service = WaiterInstance
 					.forId(WaiterInstance.USER_SERVICE);
-
+			
 			final User user = service.authenticateUser(textLogin.getText(),
 					Utils.generateMd5(String.valueOf(textPassword.getPassword())));
-
+			
 			if (null == user) {
 				lbInfo.setText("Неверные имя или пароль");
 			} else {

@@ -8,6 +8,14 @@ package ua.cn.yet.waiter.ui;
 public interface OrderTabListener {
 
 	/**
+	 * Order is printed by user
+	 * 
+	 * @param orderTab
+	 *            Order tab that triggered event
+	 */
+	public void orderPrinted(OrderTab orderTab);
+	
+	/**
 	 * Order is canceled and confirmed by user
 	 * 
 	 * @param orderTab

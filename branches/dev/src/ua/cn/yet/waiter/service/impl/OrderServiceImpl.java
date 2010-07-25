@@ -177,7 +177,9 @@ public class OrderServiceImpl extends GenericServiceImpl<Order> implements
 		report.setOnlyClosed(closed);
 
 		for (Order order : orders) {
-			report.addOrder(order);
+			if(!order.isCanceled()){
+				report.addOrder(order);
+			}
 		}
 
 		return report;

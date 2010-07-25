@@ -26,8 +26,10 @@ public class TableModelOrders extends AbstractTableModel {
 
 	private static final Log log = LogFactory.getLog(TableModelOrders.class);
 
-	public static final int COLUMN_DEL = 7;
-	public static final int COLUMN_MARK_DEL = 6;
+	public static final int COLUMN_DEL = 9;
+	public static final int COLUMN_MARK_DEL = 8;
+	public static final int COLUMN_CANCELLED = 7;
+	public static final int COLUMN_CHANGED = 6;
 	public static final int COLUMN_SUM = 5;
 	public static final int COLUMN_CLOSED = 4;
 	public static final int COLUMN_CREATED = 3;
@@ -45,7 +47,7 @@ public class TableModelOrders extends AbstractTableModel {
 	 * Names of all columns
 	 */
 	private final String[] columnNames = { "№", "Столик", "Официант", "Создан",
-			"Закрыт", "Сумма", "Удалить", "" };
+			"Закрыт", "Сумма", "Изменен", "Отменен", "Удален", "" };
 
 	private OrderService orderService;
 
@@ -145,6 +147,10 @@ public class TableModelOrders extends AbstractTableModel {
 				return order.isForDeletion();
 			case COLUMN_DEL:
 				return order;
+			case COLUMN_CANCELLED:
+				return order.isCanceled();
+			case COLUMN_CHANGED:
+				return order.isChanged();
 			default:
 				return null;
 			}

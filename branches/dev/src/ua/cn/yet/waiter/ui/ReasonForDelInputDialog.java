@@ -34,14 +34,14 @@ public class ReasonForDelInputDialog extends JDialog {
 	}
 	
 	private ReasonForDelInputDialog(Window parent) {
-		super(parent, "Причина для удаления", ModalityType.APPLICATION_MODAL);
+		super(parent, "Причина для отмены/удаления", ModalityType.APPLICATION_MODAL);
 		
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		this.setResizable(false);
 		
 		this.setLayout(new MigLayout("insets 5"));
 		
-		this.add(new JLabel("Выберите или введите причину для удаления заказа:"), "wrap");
+		this.add(new JLabel("Выберите или введите причину для отмены/удаления заказа:"), "wrap");
 		
 		this.add(createReasonCombo(), "growx, wrap");
 		

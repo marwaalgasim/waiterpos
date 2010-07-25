@@ -36,5 +36,14 @@ public interface PrintingService {
 	 * @return true if printing was successful
 	 */
 	public boolean printOrderReport(OrderReport report);
+	
+	/**
+	 * Printing order changes
+	 * 
+	 * @param order
+	 *            Order which chanes to print
+	 * @return true if printing was successful
+	 */
+	public boolean printOrderChanges(Order order);
 
 }
