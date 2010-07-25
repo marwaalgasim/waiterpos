@@ -1,6 +1,7 @@
 package ua.cn.yet.waiter.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -8,6 +9,8 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,22 +23,27 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
-import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.common.ui.popup.PopupFactory;
 import ua.cn.yet.common.ui.popup.PopupListener;
 import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OrderedItem;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
+import ua.cn.yet.waiter.ui.table.editors.ColumnBtnEditor;
 import ua.cn.yet.waiter.ui.table.models.TableModelReceipt;
+import ua.cn.yet.waiter.ui.table.renderers.ColumnBtnRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnMassRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnPriceRenderer;
 import ua.cn.yet.waiter.util.Utils;
+
+import ua.cn.yet.waiter.ui.components.TransparentButton;
 
 public class ReceiptTables extends JPanel implements TableModelListener {
 
@@ -111,9 +119,11 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 	private JTable createAndSetupTable(TableModelReceipt tableModel,
 			String title) {
 		JTable table = new JTable(tableModel);
+	
 		table
 				.addMouseListener(Utils
 						.getTableRightClickRowSelectListener(table));
+		
 
 		if (allowEdit) {
 			table.addMouseListener(new OrderItemDoubleClickListener(table));
@@ -173,6 +183,28 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		render = new ColumnPriceRenderer(true);
 		render.setHorizontalAlignment(SwingConstants.TRAILING);
 		col.setCellRenderer(render);
+		
+		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_EDIT);
+		JButton btn = new JButton(new ImageIcon("bin/ua/cn/yet/waiter/ui/images/edit.png"));
+		btn.setToolTipText("Изменить элемент");
+		btn.setBorderPainted(false);
+		render = new ColumnBtnRenderer(btn);
+		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setCellRenderer(render);
+		col.setCellEditor(new ColumnBtnEditor(new EditOrderedItemAction(table)));
+		col.setMinWidth(17);
+		col.setMaxWidth(17);
+		
+		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_DEL);
+		btn = new JButton(new ImageIcon("bin/ua/cn/yet/waiter/ui/images/remove.png"));
+		btn.setToolTipText("Удалить элемент");
+		btn.setBorderPainted(false);
+		render = new ColumnBtnRenderer(btn);
+		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setCellRenderer(render);
+		col.setCellEditor(new ColumnBtnEditor(new RemoveOrderedItemAction(table)));
+		col.setMinWidth(20);
+		col.setMaxWidth(20);
 	}
 
 	/**
