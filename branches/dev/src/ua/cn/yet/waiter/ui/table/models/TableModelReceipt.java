@@ -46,7 +46,7 @@ public class TableModelReceipt extends AbstractTableModel {
 	public TableModelReceipt(boolean allowEdit) {
 		super();
 		this.allowEdit = allowEdit;
-		service = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
+		orderedItemService = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
 		loggedChangeService=WaiterInstance.forId(WaiterInstance.LOGGED_CHANGE_SERVICE);
 	}
 
@@ -58,7 +58,7 @@ public class TableModelReceipt extends AbstractTableModel {
 
 	private SortedSet<OrderedItem> items = new TreeSet<OrderedItem>();
 
-	private OrderedItemService service;
+	private OrderedItemService orderedItemService;
 	
 	private LoggedChangeService loggedChangeService;
 	
@@ -195,10 +195,10 @@ public class TableModelReceipt extends AbstractTableModel {
 		try {
 			
 			if(items.contains(item)){
-				logItemChanges(item, service.getEntityById(item.getId()));
+				logItemChanges(item, orderedItemService.getEntityById(item.getId()));
 			}
 					
-			OrderedItem savedItem = service.save(item);
+			OrderedItem savedItem = orderedItemService.save(item);
 			
 			Order order = savedItem.getOrder();
 			EventBus.publish(new OrderChangedEvent(this, order));
@@ -224,7 +224,6 @@ public class TableModelReceipt extends AbstractTableModel {
 	 * @param oldItem item before changes
 	 */
 	private void logItemChanges(OrderedItem item,OrderedItem oldItem){
-		
 		//if order was not printed there is no need in logging
 		if(!item.getOrder().isPrinted()){
 			return;
@@ -394,7 +393,7 @@ public class TableModelReceipt extends AbstractTableModel {
 		try {
 			logItemDeletion(item);
 			
-			service.delEntity(item);
+			orderedItemService.delEntity(item);
 			
 			item.getOrder().getItems().remove(item);
 			EventBus.publish(new OrderChangedEvent(this, item.getOrder()));
@@ -407,6 +406,20 @@ public class TableModelReceipt extends AbstractTableModel {
 					"Не получилось удалить элемент :(",
 					JOptionPane.ERROR_MESSAGE);
 		}
+	}
+
+	/**
+	 * @param orderedItemService the orderedItemService to set
+	 */
+	public void setOrderedItemService(OrderedItemService orderedItemService) {
+		this.orderedItemService = orderedItemService;
+	}
+
+	/**
+	 * @param loggedChangeService the loggedChangeService to set
+	 */
+	public void setLoggedChangeService(LoggedChangeService loggedChangeService) {
+		this.loggedChangeService = loggedChangeService;
 	}
 	
 	
