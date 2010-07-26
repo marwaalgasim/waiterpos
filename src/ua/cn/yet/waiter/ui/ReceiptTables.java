@@ -1,7 +1,6 @@
 package ua.cn.yet.waiter.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -42,8 +41,6 @@ import ua.cn.yet.waiter.ui.table.renderers.ColumnBtnRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnMassRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnPriceRenderer;
 import ua.cn.yet.waiter.util.Utils;
-
-import ua.cn.yet.waiter.ui.components.TransparentButton;
 
 public class ReceiptTables extends JPanel implements TableModelListener {
 
@@ -192,8 +189,8 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		render.setHorizontalAlignment(SwingConstants.CENTER);
 		col.setCellRenderer(render);
 		col.setCellEditor(new ColumnBtnEditor(new EditOrderedItemAction(table)));
-		col.setMinWidth(17);
-		col.setMaxWidth(17);
+		col.setMinWidth(20);
+		col.setMaxWidth(20);
 		
 		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_DEL);
 		btn = new JButton(new ImageIcon("bin/ua/cn/yet/waiter/ui/images/remove.png"));
