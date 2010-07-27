@@ -1,5 +1,6 @@
 package ua.cn.yet.waiter.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -27,7 +29,6 @@ import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OutputElement;
 import ua.cn.yet.waiter.service.CategoryService;
-import ua.cn.yet.waiter.service.OrderService;
 import ua.cn.yet.waiter.service.PrintingService;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.Utils;
@@ -38,6 +39,7 @@ import ua.cn.yet.waiter.util.WaiterInstance;
  * 
  * @author Yuriy Tkach
  */
+
 public class OrderTab extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -65,7 +67,18 @@ public class OrderTab extends JPanel {
 	private PrintingService printService;
 	
 	private boolean categoriesDisplay = true;
-
+	
+	private JLabel categoryNameLabel;
+	
+	private JLabel getCategoryNameLabel(){
+		if(categoryNameLabel==null){
+			categoryNameLabel = new JLabel();
+			categoryNameLabel.setForeground(new Color(54,100,26));
+			categoryNameLabel.setFont(categoryNameLabel.getFont().deriveFont(18.0f));
+		}
+		return categoryNameLabel;
+	}
+	
 	public OrderTab(Order order, OrderTabListener tabListener) {
 		this.order = order;
 		this.tabListener = tabListener;
@@ -78,18 +91,19 @@ public class OrderTab extends JPanel {
 		categories = categoryService.getAllSortedAsOutputElements();
 
 		setLayout(new MigLayout("insets 5", "[fill,grow]", "[fill,grow]"));
-
+		
 		scrollPaneItems = new JScrollPane(
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(scrollPaneItems, "width 660!");
-
+						
 		panelItems = new JPanel();
 		displayCategories();
 		scrollPaneItems.setViewportView(panelItems);
 
 		add(createReceiptPanel());
 	}
+	
 
 	/**
 	 * @return Panel for receipt table
@@ -169,6 +183,7 @@ public class OrderTab extends JPanel {
 				.append(ITEM_BUTTON_HEIGHT).append("!");
 		
 		if (!categoriesDisplay) {
+			contentPane.add(getCategoryNameLabel(),"gapleft 6, dock north");
 			JButton button = createBackToCategoriesButton();
 			contentPane.add(button);
 		}
@@ -214,6 +229,7 @@ public class OrderTab extends JPanel {
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				displayCategories();
+				getCategoryNameLabel().setText("");
 			}
 		});
 		return button;
@@ -264,8 +280,9 @@ public class OrderTab extends JPanel {
 			if (Category.class.isAssignableFrom(outputElement.getClass())) {
 				// Displaying category items
 				categoriesDisplay = false;
-				updateItemsPane(panelItems, new TreeSet<OutputElement>(
-						((Category) outputElement).getItems()));
+				Category category = (Category) outputElement;
+				getCategoryNameLabel().setText(category.getName()+":");
+				updateItemsPane(panelItems, new TreeSet<OutputElement>(category.getItems()));
 				tabListener.categoryDisplayed(OrderTab.this);
 			} else {
 				// Adding item to the receipt
