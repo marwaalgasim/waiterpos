@@ -46,10 +46,10 @@ public class User extends DomainObject {
 	/** Specifies if user is admin */
 	private boolean admin = false;
 	
-	@Formula("(SELECT count(odr.id) FROM ordr as odr WHERE odr.waiter_id = id AND odr.closed = '1')")
+	@Formula("(SELECT count(odr.id) FROM ordr as odr WHERE odr.waiter_id = id AND odr.closed = 1)")
 	private int ordersClosed = 0;
 	
-	@Formula("(SELECT count(odr.id) FROM ordr as odr WHERE odr.waiter_id = id AND odr.closed = '0')")
+	@Formula("(SELECT count(odr.id) FROM ordr as odr WHERE odr.waiter_id = id AND odr.closed = 0)")
 	private int ordersOpen = 0;
 	
 	public User() {
