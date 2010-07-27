@@ -2,13 +2,14 @@ package ua.cn.yet.waiter.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -52,6 +53,8 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 	private TableModelReceipt tableModelAlcohol;
 	private JLabel lbTotalSum;
 	private Order order;
+	private Icon editIcon;
+	private Icon removeIcon;
 
 	/** Specifies if editing of ordered items is allowed */
 	private boolean allowEdit;
@@ -63,8 +66,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		
 		AnnotationProcessor.process(this);
 
+		editIcon = AbstractForm.createImageIcon("edit.png");
+		removeIcon = AbstractForm.createImageIcon("remove.png");
+		
 		setLayout(new MigLayout("insets 0", "[grow, fill]",
 				"[grow, fill][grow,fill][grow,fill][fill]"));
+		
 
 		tableModelFood = new TableModelReceipt(allowEdit);
 		createAndSetupTable(tableModelFood, "Блюда");
@@ -182,26 +189,24 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		col.setCellRenderer(render);
 		
 		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_EDIT);
-		JButton btn = new JButton(new ImageIcon("bin/ua/cn/yet/waiter/ui/images/edit.png"));
-		btn.setToolTipText("Изменить элемент");
+		JButton btn = new JButton(editIcon);
+		btn.setMargin(new Insets(0, 0, 0, 0));
 		btn.setBorderPainted(false);
+		btn.setToolTipText("Изменить элемент");
 		render = new ColumnBtnRenderer(btn);
-		render.setHorizontalAlignment(SwingConstants.CENTER);
 		col.setCellRenderer(render);
-		col.setCellEditor(new ColumnBtnEditor(new EditOrderedItemAction(table)));
-		col.setMinWidth(20);
-		col.setMaxWidth(20);
+		col.setCellEditor(new ColumnBtnEditor(new EditOrderedItemAction(table, "")));
+		col.setPreferredWidth(20);
 		
 		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_DEL);
-		btn = new JButton(new ImageIcon("bin/ua/cn/yet/waiter/ui/images/remove.png"));
+		btn = new JButton(removeIcon);
 		btn.setToolTipText("Удалить элемент");
+		btn.setMargin(new Insets(0, 0, 0, 0));
 		btn.setBorderPainted(false);
 		render = new ColumnBtnRenderer(btn);
-		render.setHorizontalAlignment(SwingConstants.CENTER);
 		col.setCellRenderer(render);
-		col.setCellEditor(new ColumnBtnEditor(new RemoveOrderedItemAction(table)));
-		col.setMinWidth(20);
-		col.setMaxWidth(20);
+		col.setCellEditor(new ColumnBtnEditor(new RemoveOrderedItemAction(table, "")));
+		col.setPreferredWidth(20);
 	}
 
 	/**
@@ -370,7 +375,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		private JTable table;
 		
 		public EditOrderedItemAction(JTable table) {
-			super("Изменить");
+			super("Изменить",editIcon);
+			this.table = table;
+		}
+		
+		public EditOrderedItemAction(JTable table, String name) {
+			super(name,editIcon);
 			this.table = table;
 		}
 		
@@ -392,7 +402,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		private JTable table;
 
 		public RemoveOrderedItemAction(JTable table) {
-			super("Удалить");
+			super("Удалить",removeIcon);
+			this.table = table;
+		}
+		
+		public RemoveOrderedItemAction(JTable table, String name) {
+			super(name,removeIcon);
 			this.table = table;
 		}
 

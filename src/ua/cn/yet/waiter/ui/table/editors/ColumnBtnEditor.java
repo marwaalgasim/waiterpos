@@ -15,9 +15,8 @@ public class ColumnBtnEditor extends AbstractCellEditor
 
 	private JButton button;
 
-	public ColumnBtnEditor(AbstractAction actionListener){
-		button = new JButton();
-		button.addActionListener(actionListener);
+	public ColumnBtnEditor(AbstractAction action){
+		button = new JButton(action);
 		button.setBorderPainted(false);
 	}
 
