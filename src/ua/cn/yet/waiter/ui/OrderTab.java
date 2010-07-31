@@ -27,8 +27,10 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import ua.cn.yet.waiter.model.Category;
 import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
+import ua.cn.yet.waiter.model.OrderedItem;
 import ua.cn.yet.waiter.model.OutputElement;
 import ua.cn.yet.waiter.service.CategoryService;
+import ua.cn.yet.waiter.service.OrderedItemService;
 import ua.cn.yet.waiter.service.PrintingService;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.Utils;
@@ -319,8 +321,34 @@ public class OrderTab extends JPanel {
 	private class PrintOrderListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+
+			boolean printUpdatesOnly = false;
+			
+			if(order.isPrinted()){	
+				Object[] options = {"Только изменения", "Весь заказ","Отмена"};
+				int choise = JOptionPane.showOptionDialog(
+						OrderTab.this,
+						"Распечатать только последние изменения в заказе?", 
+						"Заказ " + OrderTab.this.order.getTitle(), 
+						JOptionPane.YES_NO_CANCEL_OPTION, 
+						JOptionPane.QUESTION_MESSAGE, 
+						AbstractForm.createImageIcon("receipt_print_question.png"),
+						options,options[0]);
+				
+				switch (choise){
+					//Only changes option
+					case 0: 
+						printUpdatesOnly = true;
+						break;
+					//Cancel option
+					case 2: 
+						return; 
+				}
+			}
+						
 			if (!order.getItems().isEmpty()) {
-				if(printService.printOrder(order)){
+				if(printService.printOrder(order,printUpdatesOnly)){
+					processOrderAfterPrinting(order);
 					tabListener.orderPrinted(OrderTab.this);
 				}
 			} else {
@@ -328,6 +356,24 @@ public class OrderTab extends JPanel {
 						"Добавьте элементы в заказ, чтобы их распечатать.",
 						"Печатать нечего :(", JOptionPane.ERROR_MESSAGE);
 			}
+		}
+	}
+	
+	/**
+	 * Updates OrderedItem entities after printing
+	 * @param order
+	 */
+	private void processOrderAfterPrinting(Order order) {
+		OrderedItemService orderedItemService = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
+		try{
+			for(OrderedItem item: order.getItems()){
+					orderedItemService.save(item);
+			}
+		} catch (Exception e){
+			log.error("Failed to update ordered items after printing for order: " + order, e);
+			JOptionPane.showMessageDialog(null, e.getLocalizedMessage(),
+					"Не получилось обновить заказ после печати :(",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

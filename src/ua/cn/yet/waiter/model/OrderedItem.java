@@ -37,7 +37,12 @@ public class OrderedItem extends AbstractItem {
 	@NotNull
 	private Order order;
 	
-
+	/** Indicates whether item was already printed for the cook */
+	private Boolean printed = false;
+	
+	/** Indicates whether item was updated after print */
+	private Boolean updated = false;
+	
 
 	public OrderedItem() {
 		super();
@@ -179,6 +184,36 @@ public class OrderedItem extends AbstractItem {
 	 */
 	public void setNewMass(int newMass) {
 		this.newMass = newMass;
+	}
+
+	/**
+	 * @return the printed
+	 */
+	public Boolean isPrinted() {
+		return printed;
+	}
+
+	/**
+	 * @param printed the printed to set
+	 */
+	public void setPrinted(Boolean printed) {
+		this.printed = printed;
+	}
+
+	/**
+	 * @return the updated
+	 */
+	public Boolean isUpdated() {
+		return updated;
+	}
+
+	/**
+	 * @param updated the updated to set
+	 */
+	public void setUpdated(Boolean updated) {
+		if(printed){
+			this.updated = updated;
+		}
 	}
 	
 }

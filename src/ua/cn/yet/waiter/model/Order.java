@@ -2,7 +2,6 @@ package ua.cn.yet.waiter.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -16,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -77,6 +77,10 @@ public class Order extends DomainObject {
 	/** Date and time, when order was created */
 	@Temporal(TemporalType.TIMESTAMP)
 	private Calendar creationDate = Calendar.getInstance();
+	
+	/** Date and time, when order was updated */
+	@Transient
+	private Calendar updateDate = Calendar.getInstance();
 
 	/** Date and time, when order was closed */
 	@Temporal(TemporalType.TIMESTAMP)
@@ -456,6 +460,16 @@ public class Order extends DomainObject {
 		}
 		return changes.toString();
 	}
+	
+	/**
+	 * In all the order items sets printed attribute to true and updated to false;
+	 */
+	public void processItemsAfterPrinting(){
+		for(OrderedItem item: items){
+			item.setPrinted(true);
+			item.setUpdated(false);
+		}
+	}
 
 	/**
 	 * @return the changes
@@ -470,5 +484,19 @@ public class Order extends DomainObject {
 	public void setChanges(SortedSet<LoggedChange> changes) {
 		this.changes = changes;
 	}
-		
+
+	/**
+	 * @return the updateDate
+	 */
+	public Calendar getUpdateDate() {
+		return updateDate;
+	}
+
+	/**
+	 * @param updateDate the updateDate to set
+	 */
+	public void setUpdateDate(Calendar updateDate) {
+		this.updateDate = updateDate;
+	}
+			
 }
