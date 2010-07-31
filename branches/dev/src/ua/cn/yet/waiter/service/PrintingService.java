@@ -15,9 +15,12 @@ public interface PrintingService {
 	 * 
 	 * @param order
 	 *            Order to print
+	 * @param printUpdatesOnly indicates whether user 
+	 * 				wants to print only the changes after last print.
+	 *  
 	 * @return true if printing was successful
 	 */
-	public boolean printOrder(Order order);
+	public boolean printOrder(Order order, boolean printUpdatesOnly);
 
 	/**
 	 * Printing receipt for user

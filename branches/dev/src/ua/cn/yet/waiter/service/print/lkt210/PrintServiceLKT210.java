@@ -59,17 +59,17 @@ public class PrintServiceLKT210 implements PrintingService {
 	 * model.Order)
 	 */
 	@Override
-	public boolean printOrder(Order order) {
+	public boolean printOrder(Order order, boolean printUpdatesOnly) {
 		if (log.isDebugEnabled()) {
 			log.debug("Printing " + order);
 		}
 
-		OrderPrinter orderPrinter = new OrderPrinter(order, ItemType.FOOD);
+		OrderPrinter orderPrinter = new OrderPrinter(order, ItemType.FOOD,printUpdatesOnly);
 		if (orderPrinter.willPrint()) {
 			printPrintable(orderPrinter);
 		}
 
-		orderPrinter = new OrderPrinter(order, ItemType.BAR);
+		orderPrinter = new OrderPrinter(order, ItemType.BAR,printUpdatesOnly);
 		if (orderPrinter.willPrint()) {
 			try {
 				Thread.sleep(1000);
@@ -79,7 +79,7 @@ public class PrintServiceLKT210 implements PrintingService {
 			printPrintable(orderPrinter);
 		}
 
-		orderPrinter = new OrderPrinter(order, ItemType.ALCOHOL);
+		orderPrinter = new OrderPrinter(order, ItemType.ALCOHOL,printUpdatesOnly);
 		if (orderPrinter.willPrint()) {
 			try {
 				Thread.sleep(1000);
@@ -89,6 +89,8 @@ public class PrintServiceLKT210 implements PrintingService {
 			printPrintable(orderPrinter);
 		}
 		
+		order.processItemsAfterPrinting();
+
 		return true;
 	}
 

@@ -1,5 +1,6 @@
 package ua.cn.yet.waiter.ui.table.models;
 
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -185,7 +186,7 @@ public class TableModelReceipt extends AbstractTableModel {
 			}
 			break;
 		}
-
+		item.setUpdated(true);
 		persistOrderItem(item);
 	}
 
@@ -205,6 +206,7 @@ public class TableModelReceipt extends AbstractTableModel {
 			OrderedItem savedItem = orderedItemService.save(item);
 			
 			Order order = savedItem.getOrder();
+						
 			EventBus.publish(new OrderChangedEvent(this, order));
 
 			items.remove(item);
@@ -332,6 +334,8 @@ public class TableModelReceipt extends AbstractTableModel {
 			return;
 		}
 
+		item.getOrder().setUpdateDate(Calendar.getInstance());
+		
 		item = processItemBeforeAdding(item);
 		
 		persistOrderItem(item);
@@ -347,7 +351,7 @@ public class TableModelReceipt extends AbstractTableModel {
 	 *            Item to add
 	 * @return already added item that is processed, or newly adding item
 	 */
-	private OrderedItem processItemBeforeAdding(OrderedItem item) {
+	private OrderedItem processItemBeforeAdding(OrderedItem item) {		
 		for (OrderedItem addedItem : items) {
 			if (addedItem.equalsLogically(item)) {
 
@@ -359,7 +363,7 @@ public class TableModelReceipt extends AbstractTableModel {
 				} else {
 					addedItem.setCount(addedItem.getCount() + item.getCount());
 				}
-
+				addedItem.setUpdated(true);
 				return addedItem;
 			}
 		}
