@@ -4,17 +4,26 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
@@ -32,6 +41,7 @@ import ua.cn.yet.waiter.model.OutputElement;
 import ua.cn.yet.waiter.service.CategoryService;
 import ua.cn.yet.waiter.service.OrderedItemService;
 import ua.cn.yet.waiter.service.PrintingService;
+import ua.cn.yet.waiter.ui.components.QuickSearchTextField;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.Utils;
 import ua.cn.yet.waiter.util.WaiterInstance;
@@ -41,7 +51,7 @@ import ua.cn.yet.waiter.util.WaiterInstance;
  * 
  * @author Yuriy Tkach
  */
-
+@SuppressWarnings("serial")
 public class OrderTab extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -52,6 +62,10 @@ public class OrderTab extends JPanel {
 	private static final int ITEM_BUTTON_HEIGHT = 140;
 
 	private static final Integer INSETS_ITEMS = 5;
+	
+	private static final String DEFAULT_CATEGORY_LABEL_TEXT="Категории:";
+	
+	private static final Color COLOR_GREEN = new Color(54,100,26);
 
 	private Order order;
 
@@ -72,10 +86,47 @@ public class OrderTab extends JPanel {
 	
 	private JLabel categoryNameLabel;
 	
+	private JTextField itemSearchField;
+	
+	private JPanel northPanel;
+	
+	private JPanel getNorthPanel(){
+		if (northPanel == null) {
+			FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT,8,0);
+			flowLayout.setAlignOnBaseline(true);
+			northPanel= new JPanel(flowLayout);
+			northPanel.add(getCategoryNameLabel());
+			northPanel.add(getItemSearchField());
+		}
+		northPanel.doLayout();
+		return northPanel;
+	}
+	
+	private JTextField getItemSearchField(){
+		if (itemSearchField == null) {
+			itemSearchField = new QuickSearchTextField("Быстрый поиск (Ctrl+F)");
+			Dimension size = itemSearchField.getPreferredSize();
+			size.setSize(size.getWidth()+20, size.getHeight());
+			itemSearchField.setPreferredSize(size);
+			itemSearchField.addKeyListener(new QuickSearchListener());
+
+			InputMap im = getInputMap(WHEN_IN_FOCUSED_WINDOW);
+			ActionMap am = getActionMap();
+			im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, true), "ctrl+f");
+			am.put("ctrl+f", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					getItemSearchField().requestFocus();
+				}
+			});
+		}
+		return itemSearchField;
+	}
+	
 	private JLabel getCategoryNameLabel(){
 		if(categoryNameLabel==null){
-			categoryNameLabel = new JLabel();
-			categoryNameLabel.setForeground(new Color(54,100,26));
+			categoryNameLabel = new JLabel(DEFAULT_CATEGORY_LABEL_TEXT);
+			categoryNameLabel.setForeground(COLOR_GREEN);
 			categoryNameLabel.setFont(categoryNameLabel.getFont().deriveFont(18.0f));
 		}
 		return categoryNameLabel;
@@ -184,17 +235,22 @@ public class OrderTab extends JPanel {
 		layoutButtonConstraint.append(ITEM_BUTTON_WIDTH).append("!, height ")
 				.append(ITEM_BUTTON_HEIGHT).append("!");
 		
+		if (categoriesDisplay) {
+			getCategoryNameLabel().setText(DEFAULT_CATEGORY_LABEL_TEXT);
+		}
+
+		contentPane.add(getNorthPanel(),"dock north, width 600!");
+		
 		if (!categoriesDisplay) {
-			contentPane.add(getCategoryNameLabel(),"gapleft 6, dock north");
 			JButton button = createBackToCategoriesButton();
 			contentPane.add(button);
 		}
-
+				
 		for (OutputElement outputElement : elems) {
 			JButton button = createItemButton(outputElement);
 			contentPane.add(button, layoutButtonConstraint.toString());
 		}
-
+		
 		contentPane.doLayout();
 		scrollPaneItems.doLayout();
 		contentPane.repaint();
@@ -231,7 +287,6 @@ public class OrderTab extends JPanel {
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				displayCategories();
-				getCategoryNameLabel().setText("");
 			}
 		});
 		return button;
@@ -441,12 +496,68 @@ public class OrderTab extends JPanel {
 			log.error("Order in the event is NULL");
 		}
 	}
+	
 
 	/**
 	 * @return the categoriesDisplay
 	 */
 	public boolean isCategoriesDisplay() {
 		return categoriesDisplay;
+	}
+	
+	
+	private class QuickSearchListener implements KeyListener{
+
+		@Override
+		public void keyPressed(KeyEvent arg0) {
+			if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
+				JButton foundButton = null;
+				for(Component comp: panelItems.getComponents()){
+					if(comp instanceof JButton){
+						JButton btn = (JButton) comp;
+						if(btn.getText().toLowerCase().contains(getItemSearchField().getText().toLowerCase())){
+							foundButton = btn;
+							break;
+						}
+					}
+				}
+				
+				if(foundButton == null) {
+					return;
+				}
+				
+				foundButton.setBorder(BorderFactory.createLineBorder(COLOR_GREEN,3));
+				foundButton.repaint();
+				foundButton.requestFocus();
+				
+				final JButton btnForThread = foundButton;
+				
+				Thread t = new Thread(){
+					public void run(){
+						try {
+							sleep(3000);
+						} catch (InterruptedException e) {}
+						btnForThread.setBorder(null);
+						btnForThread.repaint();
+					}
+				};
+				
+				t.start();
+				
+			}
+			
+		}
+
+		@Override
+		public void keyReleased(KeyEvent arg0) {
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent arg0) {
+						
+		}
+		
 	}
 
 }
