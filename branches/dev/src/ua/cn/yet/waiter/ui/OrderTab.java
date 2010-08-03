@@ -5,8 +5,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -93,14 +93,28 @@ public class OrderTab extends JPanel {
 	
 	private JPanel getNorthPanel(){
 		if (northPanel == null) {
-			FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT,8,0);
-			flowLayout.setAlignOnBaseline(true);
-			northPanel= new JPanel(flowLayout);
-			northPanel.add(getCategoryNameLabel());
-			northPanel.add(getItemSearchField());
+			MigLayout layout = new MigLayout("fillx, insets n n 0 n","","center");
+
+			northPanel= new JPanel(layout);
+			northPanel.add(getCategoryNameLabel(),"gapleft 3, align left");
+			northPanel.add(getItemSearchField()," align right, split 2");
+			
+			JButton btnClear = new JButton(AbstractForm.createImageIcon("clear_left.png"));
+			btnClear.setToolTipText("Очистить поле");
+			btnClear.setMargin(new Insets(0, 0, 0, 0));
+			btnClear.setBorderPainted(false);
+			
+			btnClear.addActionListener(new AbstractAction() {
+				public void actionPerformed(ActionEvent arg0) {
+					getItemSearchField().setText("");					
+				}
+			});
+			
+			northPanel.add(btnClear," align right, gapleft 0, width 24!");
+
 		}
 		northPanel.doLayout();
-		return northPanel;
+		return northPanel;		
 	}
 	
 	private JTextField getItemSearchField(){
@@ -240,7 +254,7 @@ public class OrderTab extends JPanel {
 			getCategoryNameLabel().setText(DEFAULT_CATEGORY_LABEL_TEXT);
 		}
 
-		contentPane.add(getNorthPanel(),"dock north, width 600!");
+		contentPane.add(getNorthPanel(),"dock north, width 630!");
 		
 		if (!categoriesDisplay) {
 			JButton button = createBackToCategoriesButton();
