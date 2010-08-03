@@ -57,7 +57,7 @@ public class Order extends DomainObject {
 	public static final int TABLE_NONE = -1;
 
 	/** Defines whether order was already printed for the cook */
-	private boolean printed=false;
+	private Boolean printed=false;
 	
 	/** Number of the table */
 	private int tableNumber = TABLE_NONE;
@@ -67,10 +67,10 @@ public class Order extends DomainObject {
 	private User waiter;
 
 	/** Specifies, if order is closed for changes */
-	private boolean closed = false;
+	private Boolean closed = false;
 	
 	/** Defines whether order was canceled by the waiter after it was printed for cook */
-	private boolean canceled=false;
+	private Boolean canceled=false;
 	
 	
 
@@ -407,7 +407,11 @@ public class Order extends DomainObject {
 	 * @return the printed
 	 */
 	public boolean isPrinted() {
-		return printed;
+		if (printed != null) {
+			return printed;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -421,7 +425,11 @@ public class Order extends DomainObject {
 	 * @return the canceled
 	 */
 	public boolean isCanceled() {
-		return canceled;
+		if (canceled != null) {
+			return canceled;
+		} else {
+			return false;
+		}
 	}
 
 	/**
