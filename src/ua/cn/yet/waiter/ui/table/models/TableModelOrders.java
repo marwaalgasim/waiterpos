@@ -17,6 +17,7 @@ import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.User;
 import ua.cn.yet.waiter.service.OrderService;
 import ua.cn.yet.waiter.ui.ReasonForDelInputDialog;
+import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.ui.events.OrderDeletedEvent;
 import ua.cn.yet.waiter.util.WaiterInstance;
 
@@ -246,7 +247,8 @@ public class TableModelOrders extends AbstractTableModel {
 
 		if (doUpdate) {
 			try {
-				orderService.save(order);
+				Order savedOrder = orderService.save(order);
+				EventBus.publish(new OrderChangedEvent(this, savedOrder));
 				fireTableDataChanged();
 			} catch (Exception e) {
 				log.error("Failed to update order: " + order, e);
