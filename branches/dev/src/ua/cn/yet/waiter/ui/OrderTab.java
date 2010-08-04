@@ -106,7 +106,8 @@ public class OrderTab extends JPanel {
 			
 			btnClear.addActionListener(new AbstractAction() {
 				public void actionPerformed(ActionEvent arg0) {
-					getItemSearchField().setText("");					
+					getItemSearchField().setText("");	
+					getItemSearchField().requestFocus();
 				}
 			});
 			
