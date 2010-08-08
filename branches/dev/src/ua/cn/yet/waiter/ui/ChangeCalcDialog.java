@@ -14,6 +14,8 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.waiter.model.Order;
+import ua.cn.yet.waiter.ui.components.DiscountInputListener;
+import ua.cn.yet.waiter.ui.components.DiscountInputPanel;
 import ua.cn.yet.waiter.ui.components.NumericInputListener;
 import ua.cn.yet.waiter.ui.components.NumericInputPanel;
 
@@ -29,8 +31,10 @@ public class ChangeCalcDialog extends JDialog {
 	private Order order;
 	private JLabel lbClientMoney;
 	private JLabel lbChangeSum;
+	private JLabel lbSum;
 
 	private double orderSum = 0.0;
+	private double clientMoney = 0.0;
 	private NumericInputPanel numericInputPanel;
 
 	public ChangeCalcDialog(Window parent, Order order) {
@@ -45,6 +49,7 @@ public class ChangeCalcDialog extends JDialog {
 		setLayout(new MigLayout("insets 3", "[fill,grow]"));
 
 		createOrderTitle();
+		createDiscountPanel();
 		createInputPanel();
 		createChangePanel();
 		createDialogButtons();
@@ -53,6 +58,21 @@ public class ChangeCalcDialog extends JDialog {
 		setLocationRelativeTo(parent);
 		setVisible(true);
 
+	}
+	
+	public void createDiscountPanel(){
+		DiscountInputPanel discountPanel = new DiscountInputPanel(orderSum);
+		discountPanel.addDiscountInputListener(new DiscountInputListener() {
+			
+			@Override
+			public void discountApplied(double newValue) {
+				lbSum.setText(String.format("%.2f грн.", newValue));
+				orderSum = newValue;
+				updateChangeSum(clientMoney, newValue);
+			}
+		});
+
+		this.add(discountPanel,"wrap");
 	}
 
 	/**
@@ -76,6 +96,8 @@ public class ChangeCalcDialog extends JDialog {
 		lbSum.setText(String.format("%.2f грн.", orderSum));
 		lbSum.setFont(boldFont);
 		panelTitle.add(lbSum, "wrap");
+		
+		this.lbSum = lbSum;
 
 		JLabel lbClient = new JLabel();
 		lbClient.setText("Деньги клиента:");
@@ -102,7 +124,8 @@ public class ChangeCalcDialog extends JDialog {
 		numericInputPanel.addNumberInputListener(new NumericInputListener() {
 			@Override
 			public void numberChanged(double newNumber) {
-				updateClientMoneyAndChange(numericInputPanel.getDecimalInput(), newNumber);				
+				clientMoney = newNumber;
+				updateClientMoneyAndChange(numericInputPanel.getDecimalInput(), clientMoney);				
 			}
 		});
 		
@@ -169,7 +192,14 @@ public class ChangeCalcDialog extends JDialog {
 			break;
 		}
 		
+		updateChangeSum(clientMoney, orderSum);
 
+	}
+	
+	/**
+	 * Updating change display
+	 */
+	private void updateChangeSum(double clientMoney, double orderSum){
 		lbChangeSum.setText(String.format("%.2f грн.", clientMoney - orderSum));
 		if (clientMoney < orderSum) {
 			lbChangeSum.setForeground(Color.RED);
