@@ -395,7 +395,7 @@ public class OrderTab extends JPanel {
 
 			boolean printUpdatesOnly = false;
 			
-			if(order.isPrinted()){	
+			if(order.isPrinted() && order.isUpdated()){	
 				Object[] options = {"Только изменения", "Весь заказ","Отмена"};
 				int choise = JOptionPane.showOptionDialog(
 						OrderTab.this,

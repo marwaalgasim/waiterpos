@@ -478,6 +478,19 @@ public class Order extends DomainObject {
 			item.setUpdated(false);
 		}
 	}
+	
+	/**
+	 * Checks whether order has unprinted or updated items
+	 * @return
+	 */
+	public boolean isUpdated(){
+		for (OrderedItem item: items) {
+			if (!item.isPrinted() || item.isUpdated()){
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * @return the changes
