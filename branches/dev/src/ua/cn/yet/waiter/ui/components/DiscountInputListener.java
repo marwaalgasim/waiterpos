@@ -1,9 +1,9 @@
 package ua.cn.yet.waiter.ui.components;
 
 /**
- * Listener to the input number panel
+ * Listener to the discount input panel
  * 
- * @author Yuriy Tkach
+ * @author n0weak
  */
 public interface DiscountInputListener {
 

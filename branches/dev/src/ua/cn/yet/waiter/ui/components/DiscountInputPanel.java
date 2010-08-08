@@ -17,6 +17,13 @@ import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.waiter.ui.AbstractForm;
 import ua.cn.yet.waiter.util.Config;
 
+/**
+ * Panel displaying discount buttons. 
+ * Discount values should be defined in property file.
+ * 
+ * @author n0weak
+ *
+ */
 public class DiscountInputPanel extends JPanel{
 	
 	private static final long serialVersionUID = 1L;
