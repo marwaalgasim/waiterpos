@@ -332,6 +332,7 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 					"Изменяем элемент", item);
 			
 			if (OrderItemEditDialog.EDIT_OK_CHANGES == rez) {
+				item.setUpdated(true);
 				model.persistOrderItem(item);
 			}
 		}
