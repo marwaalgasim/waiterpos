@@ -166,6 +166,12 @@ public class OrdersViewPanel extends JScrollPane {
 		col.setPreferredWidth(100);
 		col.setCellRenderer(render);
 
+		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_DISCOUNT);
+		render = new DefaultTableCellRenderer();
+		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setMaxWidth(80);
+		col.setCellRenderer(render);
+		
 		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_SUM);
 		render = new ColumnPriceRenderer(true);
 		render.setHorizontalAlignment(SwingConstants.CENTER);
@@ -211,6 +217,7 @@ public class OrdersViewPanel extends JScrollPane {
 			col.setCellRenderer(render);
 			col.setCellEditor(new ColumnOrderDelEditor(tableModelOrders));
 		}
+
 	}
 
 	/**

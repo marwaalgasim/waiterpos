@@ -112,16 +112,25 @@ class ReceiptPrinter extends LKT210Printer {
 			drawLeftDotsRight(g2d, itemInfo.toString(), price.toString(),
 					line, pageWidth);
 		}
+		
+		line += lineHeight;
+		
+		StringBuilder discount = new StringBuilder();
+		discount.append(String.format("%.0f", order.getDiscount()*100));
+		discount.append("%");
+		drawLeftDotsRight(g2d, "Скидка:", discount.toString(), line, pageWidth);
+		
 
+		
 		g2d.setFont(new Font("", Font.BOLD, 8));
 		lineHeight = g2d.getFontMetrics().getHeight();
 
 		line += (int) (lineHeight * 0.5);
 		g2d.drawLine(0, line, pageWidth, line);
 		line += lineHeight;
-
+		
 		StringBuilder totalPrice = new StringBuilder();
-		totalPrice.append(String.format("%.2f", order.getSum()));
+		totalPrice.append(String.format("%.2f", order.getSum(true)));
 		totalPrice.append(" грн.");
 
 		drawLeftDotsRight(g2d, "ИТОГО:", totalPrice.toString(), line, pageWidth);

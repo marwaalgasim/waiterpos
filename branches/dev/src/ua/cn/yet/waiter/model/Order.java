@@ -103,6 +103,9 @@ public class Order extends DomainObject {
 
 	/** Reason for marking item for deletion */
 	private String forDeletionReason;
+	
+	/** Discount value for the order */
+	private Double discount = 0.0;
 
 	/**
 	 * Closing order by setting appropriate variables
@@ -113,14 +116,29 @@ public class Order extends DomainObject {
 	}
 
 	/**
-	 * @return total sum of the order
+	 * @return total sum of the order, considering discount value
 	 */
 	public double getSum() {
 		double rez = 0;
 		for (OrderedItem item : items) {
 			rez += item.getOrderedPriceBillAndCoins();
 		}
-		return rez;
+		
+		return rez - rez*getDiscount();
+	}
+	
+	/**
+	 *  
+	 * @param considerDiscount specifies whether discount value should be considered
+	 * @return total sum of the order
+	 */
+	public double getSum(boolean considerDiscount) {
+		double rez = 0;
+		for (OrderedItem item : items) {
+			rez += item.getOrderedPriceBillAndCoins();
+		}
+				
+		return considerDiscount? rez - rez*getDiscount() : rez;
 	}
 
 		
@@ -519,5 +537,23 @@ public class Order extends DomainObject {
 	public void setUpdateDate(Calendar updateDate) {
 		this.updateDate = updateDate;
 	}
-			
+
+	/**
+	 * @return the discount
+	 */
+	public Double getDiscount() {
+		if (discount == null) {
+			discount = 0.0;
+		}
+		
+		return discount;
+	}
+
+	/**
+	 * @param discount the discount to set
+	 */
+	public void setDiscount(Double discount) {
+		this.discount = discount;
+	}
+				
 }
