@@ -27,11 +27,12 @@ public class TableModelOrders extends AbstractTableModel {
 
 	private static final Log log = LogFactory.getLog(TableModelOrders.class);
 
-	public static final int COLUMN_DEL = 9;
-	public static final int COLUMN_MARK_DEL = 8;
-	public static final int COLUMN_CANCELLED = 7;
-	public static final int COLUMN_CHANGED = 6;
-	public static final int COLUMN_SUM = 5;
+	public static final int COLUMN_DEL = 10;
+	public static final int COLUMN_MARK_DEL = 9;
+	public static final int COLUMN_CANCELLED = 8;
+	public static final int COLUMN_CHANGED = 7;
+	public static final int COLUMN_SUM = 6;
+	public static final int COLUMN_DISCOUNT = 5;
 	public static final int COLUMN_CLOSED = 4;
 	public static final int COLUMN_CREATED = 3;
 	public static final int COLUMN_WAITER = 2;
@@ -48,7 +49,7 @@ public class TableModelOrders extends AbstractTableModel {
 	 * Names of all columns
 	 */
 	private final String[] columnNames = { "№", "Столик", "Официант", "Создан",
-			"Закрыт", "Сумма", "Изменен", "Отменен", "Удален", "" };
+			"Закрыт","Скидка", "Сумма", "Изменен", "Отменен", "Удален", "" };
 
 	private OrderService orderService;
 
@@ -142,6 +143,8 @@ public class TableModelOrders extends AbstractTableModel {
 				return order.getCreationDate();
 			case COLUMN_CLOSED:
 				return order.getClosingDate();
+			case COLUMN_DISCOUNT:
+				return String.format("%.0f",order.getDiscount()*100)+"%";
 			case COLUMN_SUM:
 				return order.getSum();
 			case COLUMN_MARK_DEL:

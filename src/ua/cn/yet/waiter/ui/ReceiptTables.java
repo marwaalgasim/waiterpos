@@ -283,7 +283,16 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		totalSum += tableModelSoftDrink.getTotalSum();
 		totalSum += tableModelAlcohol.getTotalSum();
 
-		lbTotalSum.setText(String.format("%.2f", totalSum) + " грн.");
+		totalSum -= totalSum * order.getDiscount();
+		
+		String totalSumLabel = String.format("%.2f", totalSum) + " грн.";
+		
+		if (order.getDiscount() > 0) {
+			totalSumLabel += " ("+String.format("%.0f", order.getDiscount()*100)+"% ск.)";
+		}
+		
+		lbTotalSum.setText(totalSumLabel);
+
 	}
 	
 	/**
@@ -300,6 +309,7 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 					if (log.isTraceEnabled()) {
 						log.trace("Updating reference to " + this.order);
 					}
+					updateTotalSum();
 				}
 			}
 		} else {

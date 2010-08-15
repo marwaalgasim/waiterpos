@@ -26,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -90,7 +91,7 @@ public class OrderTab extends JPanel {
 	private JTextField itemSearchField;
 	
 	private JPanel northPanel;
-	
+		
 	private JPanel getNorthPanel(){
 		if (northPanel == null) {
 			MigLayout layout = new MigLayout("fillx, insets n n 0 n","","center");
@@ -207,9 +208,20 @@ public class OrderTab extends JPanel {
 
 		JButton btnPrintOrder = new JButton("Печать");
 		btnPrintOrder.setToolTipText("Напечатать отдельные квитанции заказа");
-		panel.add(btnPrintOrder, "w 80::");
+		panel.add(btnPrintOrder, "split 2, w 80::");
 		btnPrintOrder.addActionListener(new PrintOrderListener());
 		btnPrintOrder.setIcon(AbstractForm.createImageIcon("fileprint.png"));
+		
+		JButton btnDiscount = new JButton("Скидка");
+		btnDiscount.setToolTipText("Сделать скидку");
+		panel.add(btnDiscount, "w 80::");
+		btnDiscount.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				new DiscountDialog(SwingUtilities.windowForComponent(OrderTab.this), order);				
+			}
+		});
+		btnDiscount.setIcon(AbstractForm.createImageIcon("discount16.png"));
 
 		JButton btnCloseOrder = new JButton("Чек");
 		btnCloseOrder.setToolTipText("Напечатать чек и закрыть заказ");
