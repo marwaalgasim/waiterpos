@@ -5,11 +5,10 @@ import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import ua.cn.yet.waiter.ui.AbstractForm;
 
-public class BooleanColumnRenderer extends DefaultTableCellRenderer {
+public class BooleanColumnRenderer extends OrderColumnRenderer {
 
 	private static final long serialVersionUID = 1L;
 

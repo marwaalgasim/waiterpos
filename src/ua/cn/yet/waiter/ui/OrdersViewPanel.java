@@ -41,6 +41,7 @@ import ua.cn.yet.waiter.ui.table.models.TableModelOrders;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnChangedRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnDateRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnDelRenderer;
+import ua.cn.yet.waiter.ui.table.renderers.OrderColumnRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnMarkDelRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnPriceRenderer;
 import ua.cn.yet.waiter.util.Utils;
@@ -143,16 +144,21 @@ public class OrdersViewPanel extends JScrollPane {
 	private void configureColumnsInOrdersTable(JTable table) {
 		TableColumn col = table.getColumnModel().getColumn(
 				TableModelOrders.COLUMN_ID);
-		DefaultTableCellRenderer render = new DefaultTableCellRenderer();
+		DefaultTableCellRenderer render = new OrderColumnRenderer();
 		render.setHorizontalAlignment(SwingConstants.CENTER);
 		col.setMaxWidth(80);
 		col.setCellRenderer(render);
 
 		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_TABLE);
-		render = new DefaultTableCellRenderer();
+		render = new OrderColumnRenderer();
 		render.setHorizontalAlignment(SwingConstants.LEADING);
 		col.setPreferredWidth(80);
 		col.setCellRenderer(render);
+		
+		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_WAITER);
+		render = new OrderColumnRenderer();
+		col.setCellRenderer(render);
+
 
 		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_CREATED);
 		render = new ColumnDateRenderer();
@@ -167,7 +173,7 @@ public class OrdersViewPanel extends JScrollPane {
 		col.setCellRenderer(render);
 
 		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_DISCOUNT);
-		render = new DefaultTableCellRenderer();
+		render = new OrderColumnRenderer();
 		render.setHorizontalAlignment(SwingConstants.CENTER);
 		col.setPreferredWidth(60);
 		col.setMaxWidth(80);
@@ -353,8 +359,8 @@ public class OrdersViewPanel extends JScrollPane {
 	 * Called to filter orders
 	 */
 	public void filterOrders(Calendar from, Calendar to, User user,
-			Boolean closed) {
-		tableModelOrders.filterOrders(from, to, user, closed);
+			Boolean closed, Boolean forDeletion) {
+		tableModelOrders.filterOrders(from, to, user, closed, forDeletion);
 	}
 
 	/**
