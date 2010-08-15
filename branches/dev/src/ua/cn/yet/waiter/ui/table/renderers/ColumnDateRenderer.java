@@ -6,9 +6,8 @@ import java.util.Calendar;
 
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
 
-public class ColumnDateRenderer extends DefaultTableCellRenderer {
+public class ColumnDateRenderer extends OrderColumnRenderer {
 
 	private static final long serialVersionUID = 1L;
 

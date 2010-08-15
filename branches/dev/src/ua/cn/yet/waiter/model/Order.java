@@ -51,6 +51,8 @@ public class Order extends DomainObject {
 	public static final String CONDITION_CREATION_RANGE = " x.creationDate BETWEEN ?%d AND ?%d ";
 	public static final String CONDITION_WAITER = " x.waiter = ?%d";
 	public static final String CONDITION_CLOSED = " x.closed = %s";
+	public static final String CONDITION_CANCELED = " x.canceled = %s";
+	public static final String CONDITION_FOR_DELETION = " x.forDeletion = %s";
 
 	public static final int TABLE_BAR = 0;
 

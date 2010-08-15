@@ -85,9 +85,9 @@ public class TableModelOrders extends AbstractTableModel {
 	}
 	
 	public void filterOrders(Calendar from, Calendar to, User waiter,
-			Boolean closed) {
+			Boolean closed, Boolean forDeletion) {
 		orders.clear();
-		orders.addAll(orderService.getOrdersForRange(from, to, waiter, closed));
+		orders.addAll(orderService.getOrdersForRange(from, to, waiter, closed, forDeletion));
 		fireTableDataChanged();
 	}
 

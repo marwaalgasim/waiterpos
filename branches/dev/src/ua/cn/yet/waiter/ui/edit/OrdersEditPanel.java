@@ -1,5 +1,6 @@
 package ua.cn.yet.waiter.ui.edit;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -21,11 +22,12 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.lang.StringUtils;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
-import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OrderReport;
 import ua.cn.yet.waiter.model.User;
@@ -94,6 +96,8 @@ public class OrdersEditPanel extends JPanel {
 		comboStatus.addItem("Все");
 		comboStatus.addItem("Закрытые");
 		comboStatus.addItem("Открытые");
+		comboStatus.addItem("Удал./отм.");
+		comboStatus.addItem("Без удал./отм.");
 		panel.add(comboStatus);
 
 		panel.add(new JLabel("за"));
@@ -194,6 +198,11 @@ public class OrdersEditPanel extends JPanel {
 						if (0 == row) {
 							rez.setFont(new Font("", Font.BOLD, 12));
 						}
+						if (3 == row) {
+							rez.setForeground(Color.RED);
+						} else {
+							rez.setForeground(Color.BLACK);
+						}
 						return rez;
 					}
 				});
@@ -201,7 +210,7 @@ public class OrdersEditPanel extends JPanel {
 		JScrollPane scroll = new JScrollPane();
 		scroll.setBorder(BorderFactory.createTitledBorder("Отчет"));
 		scroll.setViewportView(tableOrderReport);
-		panel.add(scroll, "h 100!");
+		panel.add(scroll, "h 140!");
 
 		JButton btnPrintReport = new JButton("Печать");
 		btnPrintReport.setToolTipText("Распечатать отчет");
@@ -223,7 +232,7 @@ public class OrdersEditPanel extends JPanel {
 								JOptionPane.QUESTION_MESSAGE);
 				if (JOptionPane.YES_OPTION == rez) {
 					printService.printOrderReport(report);
-				}
+				} 
 			}
 		});
 
@@ -246,6 +255,29 @@ public class OrdersEditPanel extends JPanel {
 			break;
 		}
 		report = new OrderReport(from, to);
+		
+		switch (comboStatus.getSelectedIndex()) {
+		case 1:
+			report.setOnlyClosed(true);
+			break;
+		case 2:
+			report.setOnlyClosed(false);
+			break;
+		case 3:
+			report.setOnlyDeleted(true);
+			break;
+		case 4:
+			report.setOnlyDeleted(false);
+			break;
+		}	
+		
+		User waiter = null;
+		if (comboWaiters.getSelectedIndex() > 0) {
+			waiter = ((WaiterWrapper) comboWaiters.getSelectedItem()).waiter;
+		}
+		
+		report.setWaiter(waiter);
+		
 		int orderCount = ordersPanel.getOrdersModel().getRowCount();
 		for (int i = 0; i < orderCount; i++) {
 			Order order = ordersPanel.getOrdersModel().getOrderAt(i);
@@ -292,6 +324,7 @@ public class OrdersEditPanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			// Getting if closed/open orders should be displayed
 			Boolean closed = null;
+			Boolean forDeletion = null;
 			switch (comboStatus.getSelectedIndex()) {
 			case 0:
 				closed = null;
@@ -301,6 +334,12 @@ public class OrdersEditPanel extends JPanel {
 				break;
 			case 2:
 				closed = false;
+				break;
+			case 3:
+				forDeletion = true;
+				break;
+			case 4:
+				forDeletion = false;
 				break;
 			}
 
@@ -323,7 +362,7 @@ public class OrdersEditPanel extends JPanel {
 				break;
 			}
 
-			ordersPanel.filterOrders(from, to, waiter, closed);
+			ordersPanel.filterOrders(from, to, waiter, closed,forDeletion);
 			updateOrderReport();
 		}
 	}

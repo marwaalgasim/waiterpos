@@ -4,9 +4,8 @@ import java.awt.Component;
 
 import javax.swing.JButton;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
 
-public class ColumnBtnRenderer extends DefaultTableCellRenderer{
+public class ColumnBtnRenderer extends OrderColumnRenderer{
 
 	private static final long serialVersionUID = 1L;
 
