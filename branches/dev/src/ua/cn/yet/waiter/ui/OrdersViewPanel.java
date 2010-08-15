@@ -169,6 +169,7 @@ public class OrdersViewPanel extends JScrollPane {
 		col = table.getColumnModel().getColumn(TableModelOrders.COLUMN_DISCOUNT);
 		render = new DefaultTableCellRenderer();
 		render.setHorizontalAlignment(SwingConstants.CENTER);
+		col.setPreferredWidth(60);
 		col.setMaxWidth(80);
 		col.setCellRenderer(render);
 		
