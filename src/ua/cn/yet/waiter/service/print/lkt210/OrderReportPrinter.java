@@ -73,7 +73,7 @@ class OrderReportPrinter extends LKT210Printer {
 			if (report.getOnlyDeleted()) {
 				sb.append("Удаленные/отмененные");
 			} else {
-				sb.append("Без удаленных/отменненых");
+				sb.append("Без удаленных/отмененных");
 			}	
 		}
 		
