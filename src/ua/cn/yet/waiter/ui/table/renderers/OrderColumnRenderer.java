@@ -19,6 +19,14 @@ public class OrderColumnRenderer extends DefaultTableCellRenderer{
 		Component rez = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
 				row, column);
 		
+		if (isSelected) {
+			setBackground(table.getSelectionBackground());
+			setForeground(table.getSelectionForeground());
+		} else {
+			setBackground(table.getBackground());
+			setForeground(table.getForeground());
+		}
+		
 		checkOrderState(table, row);
 		
 		return rez;
@@ -46,8 +54,6 @@ public class OrderColumnRenderer extends DefaultTableCellRenderer{
 		
 		if (order.isCanceled() || order.isForDeletion()) {
 			setBackground(new Color(255,187,186));
-		} else {
-			setBackground(Color.WHITE);
 		}
 	}
 	
