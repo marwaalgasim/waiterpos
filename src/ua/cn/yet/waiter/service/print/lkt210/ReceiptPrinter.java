@@ -118,7 +118,7 @@ class ReceiptPrinter extends LKT210Printer {
 			line += lineHeight*2;
 			
 			StringBuilder actualPrice = new StringBuilder();
-			actualPrice.append(String.format("%.0f", order.getSum(false)));
+			actualPrice.append(String.format("%.2f", order.getSum(false)));
 			actualPrice.append(" грн.");
 			drawLeftDotsRight(g2d, "Сумма без скидки", actualPrice.toString(), line, pageWidth);
 			
