@@ -2,12 +2,15 @@ package ua.cn.yet.waiter.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,19 +23,22 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
-import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.common.ui.popup.PopupFactory;
 import ua.cn.yet.common.ui.popup.PopupListener;
 import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OrderedItem;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
+import ua.cn.yet.waiter.ui.table.editors.ColumnBtnEditor;
 import ua.cn.yet.waiter.ui.table.models.TableModelReceipt;
+import ua.cn.yet.waiter.ui.table.renderers.ColumnBtnRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnMassRenderer;
 import ua.cn.yet.waiter.ui.table.renderers.ColumnPriceRenderer;
 import ua.cn.yet.waiter.util.Utils;
@@ -47,6 +53,8 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 	private TableModelReceipt tableModelAlcohol;
 	private JLabel lbTotalSum;
 	private Order order;
+	private Icon editIcon;
+	private Icon removeIcon;
 
 	/** Specifies if editing of ordered items is allowed */
 	private boolean allowEdit;
@@ -58,8 +66,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		
 		AnnotationProcessor.process(this);
 
+		editIcon = AbstractForm.createImageIcon("edit.png");
+		removeIcon = AbstractForm.createImageIcon("remove.png");
+		
 		setLayout(new MigLayout("insets 0", "[grow, fill]",
 				"[grow, fill][grow,fill][grow,fill][fill]"));
+		
 
 		tableModelFood = new TableModelReceipt(allowEdit);
 		createAndSetupTable(tableModelFood, "Блюда");
@@ -111,9 +123,11 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 	private JTable createAndSetupTable(TableModelReceipt tableModel,
 			String title) {
 		JTable table = new JTable(tableModel);
+	
 		table
 				.addMouseListener(Utils
 						.getTableRightClickRowSelectListener(table));
+		
 
 		if (allowEdit) {
 			table.addMouseListener(new OrderItemDoubleClickListener(table));
@@ -173,6 +187,26 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		render = new ColumnPriceRenderer(true);
 		render.setHorizontalAlignment(SwingConstants.TRAILING);
 		col.setCellRenderer(render);
+		
+		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_EDIT);
+		JButton btn = new JButton(editIcon);
+		btn.setMargin(new Insets(0, 0, 0, 0));
+		btn.setBorderPainted(false);
+		btn.setToolTipText("Изменить элемент");
+		render = new ColumnBtnRenderer(btn);
+		col.setCellRenderer(render);
+		col.setCellEditor(new ColumnBtnEditor(new EditOrderedItemAction(table, "")));
+		col.setPreferredWidth(20);
+		
+		col = table.getColumnModel().getColumn(TableModelReceipt.COLUMN_BTN_DEL);
+		btn = new JButton(removeIcon);
+		btn.setToolTipText("Удалить элемент");
+		btn.setMargin(new Insets(0, 0, 0, 0));
+		btn.setBorderPainted(false);
+		render = new ColumnBtnRenderer(btn);
+		col.setCellRenderer(render);
+		col.setCellEditor(new ColumnBtnEditor(new RemoveOrderedItemAction(table, "")));
+		col.setPreferredWidth(20);
 	}
 
 	/**
@@ -249,7 +283,16 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		totalSum += tableModelSoftDrink.getTotalSum();
 		totalSum += tableModelAlcohol.getTotalSum();
 
-		lbTotalSum.setText(String.format("%.2f", totalSum) + " грн.");
+		totalSum -= totalSum * order.getDiscount();
+		
+		String totalSumLabel = String.format("%.2f", totalSum) + " грн.";
+		
+		if (order.getDiscount() > 0) {
+			totalSumLabel += " ("+String.format("%.0f", order.getDiscount()*100)+"% ск.)";
+		}
+		
+		lbTotalSum.setText(totalSumLabel);
+
 	}
 	
 	/**
@@ -266,6 +309,7 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 					if (log.isTraceEnabled()) {
 						log.trace("Updating reference to " + this.order);
 					}
+					updateTotalSum();
 				}
 			}
 		} else {
@@ -298,6 +342,7 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 					"Изменяем элемент", item);
 			
 			if (OrderItemEditDialog.EDIT_OK_CHANGES == rez) {
+				item.setUpdated(true);
 				model.persistOrderItem(item);
 			}
 		}
@@ -341,7 +386,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		private JTable table;
 		
 		public EditOrderedItemAction(JTable table) {
-			super("Изменить");
+			super("Изменить",editIcon);
+			this.table = table;
+		}
+		
+		public EditOrderedItemAction(JTable table, String name) {
+			super(name,editIcon);
 			this.table = table;
 		}
 		
@@ -363,7 +413,12 @@ public class ReceiptTables extends JPanel implements TableModelListener {
 		private JTable table;
 
 		public RemoveOrderedItemAction(JTable table) {
-			super("Удалить");
+			super("Удалить",removeIcon);
+			this.table = table;
+		}
+		
+		public RemoveOrderedItemAction(JTable table, String name) {
+			super(name,removeIcon);
 			this.table = table;
 		}
 

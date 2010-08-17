@@ -35,17 +35,23 @@ public class OrderReport {
 
 	/**
 	 * If only closedOrders or open orders are included. If <code>null</code>
-	 * then all orders were taken into account
+	 * then both of them are taken into account
 	 */
 	private Boolean closedOrders;
+	
+	/**
+	 * If only deleted/cancelled or normal orders are included. If <code>null</code>
+	 * then both of them orders were taken into account
+	 */
+	private Boolean deletedOrders;
 
-	/** Total sums for separate item types */
+	/** Total sums for separate item types, excluding deleted or canceled orders */
 	private Map<ItemType, Double> totalsForType = new HashMap<ItemType, Double>();
 
-	/** Total sum for the report */
+	/** Total sum for the report, excluding deleted or canceled orders */
 	private double totalSum = 0;
 
-	/** Total number of orders for report */
+	/** Total number of orders for report, excluding deleted or canceled orders */
 	private int totalOrders = 0;
 
 	/** Total sums for separate item types. Only open orders */
@@ -56,6 +62,15 @@ public class OrderReport {
 
 	/** Total number of open orders */
 	private int totalOpenOrders = 0;
+	
+	/** Total number of canceled/deleted orders */
+	private int totalDelOrders = 0;
+	
+	/** Total sum of deleted or canceled orders */
+	private double totalSumDelOrders = 0;
+	
+	/** Total sums for separate item types. Only deleted or canceled orders */
+	private Map<ItemType, Double> totalsForTypeDelOrders = new HashMap<ItemType, Double>();
 
 	/**
 	 * Creating report object for specified date range and initializing
@@ -74,6 +89,7 @@ public class OrderReport {
 		for (ItemType itemType : types) {
 			totalsForType.put(itemType, Double.valueOf(0));
 			totalsForTypeOpenOrders.put(itemType, Double.valueOf(0));
+			totalsForTypeDelOrders.put(itemType, Double.valueOf(0));
 		}
 	}
 
@@ -84,20 +100,24 @@ public class OrderReport {
 	 *            Order to add
 	 */
 	public void addOrder(Order order) {
+		
+		if (order.isForDeletion() || order.isCanceled()) {
+			totalDelOrders++;
+			totalSumDelOrders += order.getSum();
+		}
+		
 		totalOrders++;
+		totalSum += order.getSum();
+		
 		if (order.isOpen()) {
 			totalOpenOrders++;
-		}
-
-		totalSum += order.getSum();
-		if (order.isOpen()) {
 			totalSumOpenOrders += order.getSum();
 		}
-
+		
 		ItemType[] types = ItemType.values();
 		for (ItemType itemType : types) {
 			Double sumForType = order.getSumForType(itemType);
-
+			
 			Double totalSumForType = getTotalsForType(itemType);
 			totalsForType.put(itemType, totalSumForType + sumForType);
 
@@ -106,6 +126,12 @@ public class OrderReport {
 				totalsForTypeOpenOrders.put(itemType, totalSumForType
 						+ sumForType);
 			}
+			
+			if (order.isForDeletion() || order.isCanceled()) {
+				totalSumForType = getTotalsForTypeDelOrders(itemType);
+				totalsForTypeDelOrders.put(itemType, totalSumForType + sumForType);
+			} 	
+
 		}
 	}
 
@@ -135,6 +161,10 @@ public class OrderReport {
 			dateStr = "";
 		}
 		return dateStr;
+	}
+	
+	public Boolean isClosedAndOpenIncluded(){
+		return null == closedOrders;
 	}
 
 	public Double getTotalsForType(ItemType type) {
@@ -174,9 +204,21 @@ public class OrderReport {
 		}
 		return rez;
 	}
+	
+	public Double getTotalsForTypeDelOrders(ItemType type) {
+		Double rez = totalsForTypeDelOrders.get(type);
+		if (null == rez) {
+			rez = 0.0;
+		}
+		return rez;
+	}
 
 	public String getTotalsForTypeOpenOrdersStr(ItemType type) {
 		return String.format("%.2f грн.", getTotalsForTypeOpenOrders(type));
+	}
+	
+	public String getTotalsForTypeDelOrdersStr(ItemType type) {
+		return String.format("%.2f грн.", getTotalsForTypeDelOrders(type));
 	}
 
 	public Double getTotalsForBarOpenOrders() {
@@ -184,13 +226,26 @@ public class OrderReport {
 				+ getTotalsForTypeOpenOrders(ItemType.SOFT_DRINK);
 		return rez;
 	}
+	
+	public Double getTotalsForBarDelOrders() {
+		Double rez = getTotalsForTypeDelOrders(ItemType.BAR)
+				+ getTotalsForTypeDelOrders(ItemType.SOFT_DRINK);
+		return rez;
+	}
 
 	public String getTotalsForBarOpenOrdersStr() {
 		return String.format("%.2f грн.", getTotalsForBarOpenOrders());
 	}
 
+	public String getTotalsForBarDelOrdersStr() {
+		return String.format("%.2f грн.", getTotalsForBarDelOrders());
+	}
 	public String getTotalSumOpenOrdersStr() {
 		return String.format("%.2f грн.", totalSumOpenOrders);
+	}
+	
+	public String getTotalSumDelOrdersStr() {
+		return String.format("%.2f грн.", totalSumDelOrders);
 	}
 
 	/**
@@ -203,7 +258,15 @@ public class OrderReport {
 	public String getTotalOpenOrdersStr() {
 		return String.valueOf(totalOpenOrders);
 	}
+	
+	public int getTotalDelOrders() {
+		return totalDelOrders;
+	}
 
+	public String getTotalDelOrdersStr() {
+		return String.valueOf(totalDelOrders);
+	}
+	
 	/**
 	 * @return the waiter
 	 */
@@ -225,6 +288,14 @@ public class OrderReport {
 	public Boolean getOnlyClosed() {
 		return closedOrders;
 	}
+	
+	public Boolean getOnlyDeleted() {
+		return deletedOrders;
+	}
+	
+	public void setOnlyDeleted(boolean onlyDeleted) {
+		this.deletedOrders = onlyDeleted;
+	}
 
 	/**
 	 * @param closedOrders
@@ -238,8 +309,8 @@ public class OrderReport {
 		return null == waiter;
 	}
 
-	public boolean isClosedAndOpenIncluded() {
-		return null == closedOrders;
+	public boolean isAllIncluded() {
+		return (null == closedOrders && null == deletedOrders);
 	}
 
 	/*
@@ -254,9 +325,49 @@ public class OrderReport {
 		sb.append("from", getFromDateStr());
 		sb.append("waiter", (getWaiter() != null) ? getWaiter().getUsername()
 				: "all");
-		sb.append("orders", (isClosedAndOpenIncluded()) ? "all"
-				: (closedOrders) ? "closed" : "open");
+		
+		String status = "";
+		if (isAllIncluded()) {
+			status = "all";
+		} else {
+			if (closedOrders != null) {
+				status += closedOrders? "closed ":"open ";
+			}
+			if (deletedOrders != null) {
+				status += deletedOrders? "deleted":"not deleted";
+			}
+		}
+		
+		sb.append("orders", status);
 		return sb.toString();
 	}
 
+	/**
+	 * @return the totalSum
+	 */
+	public double getTotalSum() {
+		return totalSum;
+	}
+
+	/**
+	 * @return the totalSumOpenOrders
+	 */
+	public double getTotalSumOpenOrders() {
+		return totalSumOpenOrders;
+	}
+
+	/**
+	 * @return the totalSumDelOrders
+	 */
+	public double getTotalSumDelOrders() {
+		return totalSumDelOrders;
+	}
+
+	/**
+	 * @return the totalOrders
+	 */
+	public int getTotalOrders() {
+		return totalOrders;
+	}
+		
 }

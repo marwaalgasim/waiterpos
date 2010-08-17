@@ -17,6 +17,7 @@ import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.User;
 import ua.cn.yet.waiter.service.OrderService;
 import ua.cn.yet.waiter.ui.ReasonForDelInputDialog;
+import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.ui.events.OrderDeletedEvent;
 import ua.cn.yet.waiter.util.WaiterInstance;
 
@@ -26,9 +27,12 @@ public class TableModelOrders extends AbstractTableModel {
 
 	private static final Log log = LogFactory.getLog(TableModelOrders.class);
 
-	public static final int COLUMN_DEL = 7;
-	public static final int COLUMN_MARK_DEL = 6;
-	public static final int COLUMN_SUM = 5;
+	public static final int COLUMN_DEL = 10;
+	public static final int COLUMN_MARK_DEL = 9;
+	public static final int COLUMN_CANCELLED = 8;
+	public static final int COLUMN_CHANGED = 7;
+	public static final int COLUMN_SUM = 6;
+	public static final int COLUMN_DISCOUNT = 5;
 	public static final int COLUMN_CLOSED = 4;
 	public static final int COLUMN_CREATED = 3;
 	public static final int COLUMN_WAITER = 2;
@@ -45,7 +49,7 @@ public class TableModelOrders extends AbstractTableModel {
 	 * Names of all columns
 	 */
 	private final String[] columnNames = { "№", "Столик", "Официант", "Создан",
-			"Закрыт", "Сумма", "Удалить", "" };
+			"Закрыт","Скидка", "Сумма", "Изменен", "Отменен", "Удален", "" };
 
 	private OrderService orderService;
 
@@ -81,9 +85,9 @@ public class TableModelOrders extends AbstractTableModel {
 	}
 	
 	public void filterOrders(Calendar from, Calendar to, User waiter,
-			Boolean closed) {
+			Boolean closed, Boolean forDeletion) {
 		orders.clear();
-		orders.addAll(orderService.getOrdersForRange(from, to, waiter, closed));
+		orders.addAll(orderService.getOrdersForRange(from, to, waiter, closed, forDeletion));
 		fireTableDataChanged();
 	}
 
@@ -139,12 +143,18 @@ public class TableModelOrders extends AbstractTableModel {
 				return order.getCreationDate();
 			case COLUMN_CLOSED:
 				return order.getClosingDate();
+			case COLUMN_DISCOUNT:
+				return String.format("%.0f",order.getDiscount()*100)+"%";
 			case COLUMN_SUM:
 				return order.getSum();
 			case COLUMN_MARK_DEL:
 				return order.isForDeletion();
 			case COLUMN_DEL:
 				return order;
+			case COLUMN_CANCELLED:
+				return order.isCanceled();
+			case COLUMN_CHANGED:
+				return order.isChanged();
 			default:
 				return null;
 			}
@@ -240,7 +250,8 @@ public class TableModelOrders extends AbstractTableModel {
 
 		if (doUpdate) {
 			try {
-				orderService.save(order);
+				Order savedOrder = orderService.save(order);
+				EventBus.publish(new OrderChangedEvent(this, savedOrder));
 				fireTableDataChanged();
 			} catch (Exception e) {
 				log.error("Failed to update order: " + order, e);

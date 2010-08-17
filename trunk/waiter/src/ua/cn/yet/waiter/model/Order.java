@@ -15,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -29,11 +30,11 @@ import org.hibernate.annotations.SortType;
 @Entity
 @Table(name = "ordr")
 @NamedQueries( {
-		@NamedQuery(name = Order.QUERY_OPEN_USER_ORDERS, query = "SELECT x FROM Order x WHERE x.waiter = ?1 AND x.closed = false"),
+		@NamedQuery(name = Order.QUERY_OPEN_USER_ORDERS, query = "SELECT x FROM Order x WHERE x.waiter = ?1 AND x.closed = false AND x.canceled = false"),
 		@NamedQuery(name = Order.QUERY_CLOSED_USER_ORDERS, query = "SELECT x FROM Order x WHERE x.waiter = ?1 AND x.closed = true"),
 		@NamedQuery(name = Order.QUERY_ALL_USER_ORDERS, query = "SELECT x FROM Order x WHERE x.waiter = ?1"),
 		@NamedQuery(name = Order.QUERY_REMOVE_USER_FROM_USER_ORDERS, query = "UPDATE Order x SET x.waiter = null WHERE x.waiter = ?1"),
-		@NamedQuery(name = Order.QUERY_ALL_OCCUPIED_TABLE_NUMBERS, query = "SELECT x.tableNumber FROM Order x WHERE x.closed = false")
+		@NamedQuery(name = Order.QUERY_ALL_OCCUPIED_TABLE_NUMBERS, query = "SELECT x.tableNumber FROM Order x WHERE x.closed = false AND x.canceled=false")
 })
 public class Order extends DomainObject {
 
@@ -50,13 +51,16 @@ public class Order extends DomainObject {
 	public static final String CONDITION_CREATION_RANGE = " x.creationDate BETWEEN ?%d AND ?%d ";
 	public static final String CONDITION_WAITER = " x.waiter = ?%d";
 	public static final String CONDITION_CLOSED = " x.closed = %s";
+	public static final String CONDITION_CANCELED = " x.canceled = %s";
+	public static final String CONDITION_FOR_DELETION = " x.forDeletion = %s";
 
 	public static final int TABLE_BAR = 0;
 
 	public static final int TABLE_NONE = -1;
 
+	/** Defines whether order was already printed for the cook */
+	private Boolean printed=false;
 	
-
 	/** Number of the table */
 	private int tableNumber = TABLE_NONE;
 
@@ -65,11 +69,20 @@ public class Order extends DomainObject {
 	private User waiter;
 
 	/** Specifies, if order is closed for changes */
-	private boolean closed = false;
+	private Boolean closed = false;
+	
+	/** Defines whether order was canceled by the waiter after it was printed for cook */
+	private Boolean canceled=false;
+	
+	
 
 	/** Date and time, when order was created */
 	@Temporal(TemporalType.TIMESTAMP)
 	private Calendar creationDate = Calendar.getInstance();
+	
+	/** Date and time, when order was updated */
+	@Transient
+	private Calendar updateDate = Calendar.getInstance();
 
 	/** Date and time, when order was closed */
 	@Temporal(TemporalType.TIMESTAMP)
@@ -79,7 +92,11 @@ public class Order extends DomainObject {
 	@OneToMany(mappedBy = "order", targetEntity = OrderedItem.class, fetch = FetchType.EAGER, cascade = { CascadeType.REMOVE })
 	@Sort(type = SortType.NATURAL)
 	private SortedSet<OrderedItem> items = new TreeSet<OrderedItem>();
-
+	
+	@OneToMany(mappedBy="order",targetEntity = LoggedChange.class, fetch = FetchType.EAGER, cascade = { CascadeType.REMOVE })
+	@Sort(type = SortType.NATURAL)
+	private SortedSet<LoggedChange> changes=new TreeSet<LoggedChange>();
+	
 	/**
 	 * Specifies, if item is marked for deletion. Only applies to closed orders.
 	 * This is a convenient way to mark item for non-priviledged user.
@@ -88,6 +105,9 @@ public class Order extends DomainObject {
 
 	/** Reason for marking item for deletion */
 	private String forDeletionReason;
+	
+	/** Discount value for the order */
+	private Double discount = 0.0;
 
 	/**
 	 * Closing order by setting appropriate variables
@@ -98,16 +118,32 @@ public class Order extends DomainObject {
 	}
 
 	/**
-	 * @return total sum of the order
+	 * @return total sum of the order, considering discount value
 	 */
 	public double getSum() {
 		double rez = 0;
 		for (OrderedItem item : items) {
 			rez += item.getOrderedPriceBillAndCoins();
 		}
-		return rez;
+		
+		return rez - rez*getDiscount();
+	}
+	
+	/**
+	 *  
+	 * @param considerDiscount specifies whether discount value should be considered
+	 * @return total sum of the order
+	 */
+	public double getSum(boolean considerDiscount) {
+		double rez = 0;
+		for (OrderedItem item : items) {
+			rez += item.getOrderedPriceBillAndCoins();
+		}
+				
+		return considerDiscount? rez - rez*getDiscount() : rez;
 	}
 
+		
 	/**
 	 * Getting sum of items of specified <code>type</code>
 	 * 
@@ -163,6 +199,25 @@ public class Order extends DomainObject {
 	 */
 	public boolean markForDeletion(String reason) {
 		if (isClosed()) {
+			forDeletion = true;
+			forDeletionReason = reason;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * Marking item for canceling
+	 * 
+	 * @param reason
+	 *            Reason for canceling
+	 * @return true if successful
+	 */
+	public boolean markCanceled(String reason) {
+		if (!isClosed() && ! isForDeletion()) {
+			canceled = true;
 			forDeletion = true;
 			forDeletionReason = reason;
 			return true;
@@ -368,4 +423,139 @@ public class Order extends DomainObject {
 		return sb.toString();
 	}
 
+	/**
+	 * @return the printed
+	 */
+	public boolean isPrinted() {
+		if (printed != null) {
+			return printed;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param printed the printed to set
+	 */
+	public void setPrinted(boolean printed) {
+		this.printed = printed;
+	}
+
+	/**
+	 * @return the canceled
+	 */
+	public boolean isCanceled() {
+		if (canceled != null) {
+			return canceled;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param canceled the canceled to set
+	 */
+	public void setCanceled(boolean canceled) {
+		this.canceled = canceled;
+	}
+
+	/** 
+	 * Defines whether order was changed by the waiter after it was printed for cook
+	 * @return true if order was changed
+	 */
+	public boolean isChanged() {
+		if(getChanges().size()>0){
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return log of the changes made to the order, uses html markup
+	 */
+	public String getLoggedChangesHtml(){
+		StringBuffer changes=new StringBuffer();
+		SimpleDateFormat sdf=new SimpleDateFormat();
+		
+		if(getChanges().size()>0){
+			for(LoggedChange loggedChange:getChanges()){
+				changes.append(
+						"<b>"+sdf.format(loggedChange.getTime().getTime())+":</b> "+
+						"<i>"+loggedChange.getItemName()+"</i>, "+
+						loggedChange.getMessage()+"<br/>");
+			}
+		}
+		return changes.toString();
+	}
+	
+	/**
+	 * In all the order items sets printed attribute to true and updated to false;
+	 */
+	public void processItemsAfterPrinting(){
+		for(OrderedItem item: items){
+			item.setPrinted(true);
+			item.setUpdated(false);
+		}
+	}
+	
+	/**
+	 * Checks whether order has unprinted or updated items
+	 * @return
+	 */
+	public boolean isUpdated(){
+		for (OrderedItem item: items) {
+			if (!item.isPrinted() || item.isUpdated()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @return the changes
+	 */
+	public SortedSet<LoggedChange> getChanges() {
+		return changes;
+	}
+
+	/**
+	 * @param changes the changes to set
+	 */
+	public void setChanges(SortedSet<LoggedChange> changes) {
+		this.changes = changes;
+	}
+
+	/**
+	 * @return the updateDate
+	 */
+	public Calendar getUpdateDate() {
+		return updateDate;
+	}
+
+	/**
+	 * @param updateDate the updateDate to set
+	 */
+	public void setUpdateDate(Calendar updateDate) {
+		this.updateDate = updateDate;
+	}
+
+	/**
+	 * @return the discount
+	 */
+	public Double getDiscount() {
+		if (discount == null) {
+			discount = 0.0;
+		}
+		
+		return discount;
+	}
+
+	/**
+	 * @param discount the discount to set
+	 */
+	public void setDiscount(Double discount) {
+		this.discount = discount;
+	}
+				
 }

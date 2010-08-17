@@ -2,6 +2,7 @@ package ua.cn.yet.waiter.service.print.lkt210;
 
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.Calendar;
 import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
@@ -23,10 +24,12 @@ class OrderPrinter extends LKT210Printer {
 	private ItemType itemType;
 	private Collection<OrderedItem> items;
 	private String title;
+	private boolean printUpdatesOnly;
 
-	OrderPrinter(Order order, ItemType type) {
+	OrderPrinter(Order order, ItemType type, boolean printUpdatesOnly) {
 		this.order = order;
 		this.itemType = type;
+		this.printUpdatesOnly = printUpdatesOnly;
 		
 		switch (itemType) {
 		case FOOD:
@@ -87,10 +90,18 @@ class OrderPrinter extends LKT210Printer {
 		g2d.setFont(new Font("", Font.PLAIN, 10));
 		int lineHeight = g2d.getFontMetrics().getHeight();
 		
-		StringBuilder sb = new StringBuilder("Заказ № ");
+		StringBuilder sb = printUpdatesOnly?
+							new StringBuilder("Изменения в заказе № ")
+							:new StringBuilder("Заказ № ");
+				
 		sb.append(order.getId());
 		sb.append(" от ");
-		sb.append(formatDateTime(order.getCreationDate().getTime(), false));
+		
+		Calendar calendar = printUpdatesOnly?
+							order.getUpdateDate()
+							:order.getCreationDate();
+							
+		sb.append(formatDateTime(calendar.getTime(), false));
 
 		g2d.drawString(sb.toString(), 0, line);
 		line += lineHeight;
@@ -133,6 +144,10 @@ class OrderPrinter extends LKT210Printer {
 		g2d.drawLine(0, line, pageWidth, line);
 
 		for (OrderedItem item : items) {
+			if(printUpdatesOnly && item.isPrinted() && ! item.isUpdated()){
+				continue;
+			}
+			
 			line += lineHeight;
 
 			StringBuilder itemName = new StringBuilder();
@@ -156,8 +171,14 @@ class OrderPrinter extends LKT210Printer {
 			
 			itemName.append(StringUtils.abbreviate(item.getName(), nameAbbreviate));
 
+			Font font = g2d.getFont();
+			if(item.isUpdated()){
+				g2d.setFont(font.deriveFont(Font.BOLD));
+			}
+			
 			drawLeftDotsRight(g2d, itemName.toString(), itemInfo.toString(),
 					line, pageWidth);
+			g2d.setFont(font);
 		}
 
 		line += (int) (lineHeight * 1.5);

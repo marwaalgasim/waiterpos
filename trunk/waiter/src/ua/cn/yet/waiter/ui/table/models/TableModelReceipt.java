@@ -1,5 +1,6 @@
 package ua.cn.yet.waiter.ui.table.models;
 
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -7,12 +8,15 @@ import java.util.TreeSet;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bushe.swing.event.EventBus;
 
+import ua.cn.yet.waiter.model.LoggedChange;
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OrderedItem;
+import ua.cn.yet.waiter.service.LoggedChangeService;
 import ua.cn.yet.waiter.service.OrderedItemService;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.WaiterInstance;
@@ -25,6 +29,10 @@ import ua.cn.yet.waiter.util.WaiterInstance;
 public class TableModelReceipt extends AbstractTableModel {
 
 	private static final Log log = LogFactory.getLog(TableModelReceipt.class);
+	
+	public static final int COLUMN_BTN_DEL = 6;
+	
+	public static final int COLUMN_BTN_EDIT = 5;
 
 	public static final int COLUMN_PRICE = 4;
 
@@ -43,19 +51,22 @@ public class TableModelReceipt extends AbstractTableModel {
 	public TableModelReceipt(boolean allowEdit) {
 		super();
 		this.allowEdit = allowEdit;
-		service = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
+		orderedItemService = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
+		loggedChangeService=WaiterInstance.forId(WaiterInstance.LOGGED_CHANGE_SERVICE);
 	}
 
 	/**
 	 * Names of all columns
 	 */
 	private final String[] columnNames = { "Наименование", "Цена", "Масса",
-			"Кол-во", "Сумма" };
+			"Кол-во", "Сумма", "И", "У" };
 
 	private SortedSet<OrderedItem> items = new TreeSet<OrderedItem>();
 
-	private OrderedItemService service;
-
+	private OrderedItemService orderedItemService;
+	
+	private LoggedChangeService loggedChangeService;
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -175,7 +186,7 @@ public class TableModelReceipt extends AbstractTableModel {
 			}
 			break;
 		}
-
+		item.setUpdated(true);
 		persistOrderItem(item);
 	}
 
@@ -187,10 +198,15 @@ public class TableModelReceipt extends AbstractTableModel {
 	 */
 	public void persistOrderItem(OrderedItem item) {
 		try {
-
-			OrderedItem savedItem = service.save(item);
+			
+			if(items.contains(item)){
+				logItemChanges(item, orderedItemService.getEntityById(item.getId()));
+			}
+					
+			OrderedItem savedItem = orderedItemService.save(item);
 			
 			Order order = savedItem.getOrder();
+						
 			EventBus.publish(new OrderChangedEvent(this, order));
 
 			items.remove(item);
@@ -205,6 +221,74 @@ public class TableModelReceipt extends AbstractTableModel {
 		}
 	}
 
+	/**
+	 * Creates LoggedChange entity that describes changes to the specified item.
+	 * Changes will be logged only if user decreased item mass or count.
+	 * Rising values are not logged.
+	 * Logging starts after the order was printed for the cook.
+	 * @param item item after changes were made
+	 * @param oldItem item before changes
+	 */
+	private void logItemChanges(OrderedItem item,OrderedItem oldItem){
+		//if order was not printed there is no need in logging
+		if(!item.getOrder().isPrinted()){
+			return;
+		}
+		
+		String changeDescription="";
+				
+		if(oldItem.getNewMass()>item.getNewMass()){
+			changeDescription+="изменение массы: "+oldItem.getNewMass()+" -> "+item.getNewMass()+"; ";
+		}
+		if(oldItem.getCount()>item.getCount()){
+			changeDescription+="изменение количества: "+oldItem.getCount()+" -> "+item.getCount()+"; ";
+		}
+
+		if(StringUtils.isNotBlank(changeDescription)){
+			Order order=item.getOrder();
+			LoggedChange loggedChange=new LoggedChange(order,item.getName(),changeDescription);
+			order.getChanges().add(loggedChange);
+			try {
+				loggedChangeService.save(loggedChange);
+			} catch (Exception e) {
+				log.error("Failed to update loggedChange: " + order, e);
+				JOptionPane.showMessageDialog(null, e.getLocalizedMessage(),
+						"Не получилось сохранить изменения :(",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
+	/**
+	 * Creates LoggedChange entity that logs deletion of specified item.
+	 * Logging starts after the order was printed for the cook.
+	 * @param item item that is going to be deleted
+	 */
+	private void logItemDeletion(OrderedItem item){
+		
+		//if order was not printed there is no need in logging
+		if(!item.getOrder().isPrinted()){
+			return;
+		}
+		
+		String changeDescription="удаление из заказа;";
+		
+		Order order=item.getOrder();
+				
+		LoggedChange loggedChange=new LoggedChange(order,item.getName(),changeDescription);
+		order.getChanges().add(loggedChange);
+		
+		try {
+			loggedChangeService.save(loggedChange);
+		} catch (Exception e) {
+			log.error("Failed to update loggedChange: " + order, e);
+			JOptionPane.showMessageDialog(null, e.getLocalizedMessage(),
+					"Не получилось сохранить изменения :(",
+					JOptionPane.ERROR_MESSAGE);
+		}
+		
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -228,6 +312,8 @@ public class TableModelReceipt extends AbstractTableModel {
 		OrderedItem item = getItemFromSet(rowIndex);
 
 		switch (columnIndex) {
+		case COLUMN_BTN_EDIT:
+		case COLUMN_BTN_DEL:
 		case COLUMN_COUNT:
 			return true;
 		case COLUMN_MASS:
@@ -248,6 +334,8 @@ public class TableModelReceipt extends AbstractTableModel {
 			return;
 		}
 
+		item.getOrder().setUpdateDate(Calendar.getInstance());
+		
 		item = processItemBeforeAdding(item);
 		
 		persistOrderItem(item);
@@ -263,7 +351,7 @@ public class TableModelReceipt extends AbstractTableModel {
 	 *            Item to add
 	 * @return already added item that is processed, or newly adding item
 	 */
-	private OrderedItem processItemBeforeAdding(OrderedItem item) {
+	private OrderedItem processItemBeforeAdding(OrderedItem item) {		
 		for (OrderedItem addedItem : items) {
 			if (addedItem.equalsLogically(item)) {
 
@@ -275,7 +363,7 @@ public class TableModelReceipt extends AbstractTableModel {
 				} else {
 					addedItem.setCount(addedItem.getCount() + item.getCount());
 				}
-
+				addedItem.setUpdated(true);
 				return addedItem;
 			}
 		}
@@ -313,7 +401,9 @@ public class TableModelReceipt extends AbstractTableModel {
 	 */
 	public void deleteItem(OrderedItem item) {
 		try {
-			service.delEntity(item);
+			logItemDeletion(item);
+			
+			orderedItemService.delEntity(item);
 			
 			item.getOrder().getItems().remove(item);
 			EventBus.publish(new OrderChangedEvent(this, item.getOrder()));
@@ -327,4 +417,20 @@ public class TableModelReceipt extends AbstractTableModel {
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}
+
+	/**
+	 * @param orderedItemService the orderedItemService to set
+	 */
+	public void setOrderedItemService(OrderedItemService orderedItemService) {
+		this.orderedItemService = orderedItemService;
+	}
+
+	/**
+	 * @param loggedChangeService the loggedChangeService to set
+	 */
+	public void setLoggedChangeService(LoggedChangeService loggedChangeService) {
+		this.loggedChangeService = loggedChangeService;
+	}
+	
+	
 }

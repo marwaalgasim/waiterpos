@@ -9,5 +9,6 @@
 		<class>ua.cn.yet.waiter.model.Order</class>
 		<class>ua.cn.yet.waiter.model.AbstractItem</class>
 		<class>ua.cn.yet.waiter.model.OrderedItem</class>
+		<class>ua.cn.yet.waiter.model.LoggedChange</class>
 	</persistence-unit>
 </persistence>

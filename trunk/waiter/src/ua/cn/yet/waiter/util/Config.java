@@ -26,6 +26,7 @@ public class Config {
 	public static final String SHOW_CHANGE_COUNT_ON_ORDER_CLOSE = "show.change.count.on.order.close";
 	public static final String TABLE_COUNT="table.count";
 	public static final String TABLE_COL_COUNT="table.col.count";
+	public static final String DISCOUNT_VALUES="discount.values";
 
 	private static Log log = LogFactory.getLog(Config.class);
 

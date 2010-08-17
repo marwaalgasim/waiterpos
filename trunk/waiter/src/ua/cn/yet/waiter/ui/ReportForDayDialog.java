@@ -217,7 +217,7 @@ public class ReportForDayDialog extends JDialog {
 			date.add(Calendar.DAY_OF_YEAR, -1);
 		}
 
-		report = orderService.getOrderReport(date, null, null, null);
+		report = orderService.getOrderReport(date, null, null, null, false);
 
 		lbDate.setText(report.getFromDateStr());
 		lbOrderCount.setText(report.getTotalOrdersStr());

@@ -1,32 +1,49 @@
 package ua.cn.yet.waiter.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
-import net.miginfocom.swing.MigLayout;
 import ua.cn.yet.waiter.model.Category;
 import ua.cn.yet.waiter.model.Item;
 import ua.cn.yet.waiter.model.Order;
+import ua.cn.yet.waiter.model.OrderedItem;
 import ua.cn.yet.waiter.model.OutputElement;
 import ua.cn.yet.waiter.service.CategoryService;
+import ua.cn.yet.waiter.service.OrderedItemService;
 import ua.cn.yet.waiter.service.PrintingService;
+import ua.cn.yet.waiter.ui.components.QuickSearchTextField;
 import ua.cn.yet.waiter.ui.events.OrderChangedEvent;
 import ua.cn.yet.waiter.util.Utils;
 import ua.cn.yet.waiter.util.WaiterInstance;
@@ -36,6 +53,7 @@ import ua.cn.yet.waiter.util.WaiterInstance;
  * 
  * @author Yuriy Tkach
  */
+@SuppressWarnings("serial")
 public class OrderTab extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -46,6 +64,10 @@ public class OrderTab extends JPanel {
 	private static final int ITEM_BUTTON_HEIGHT = 140;
 
 	private static final Integer INSETS_ITEMS = 5;
+	
+	private static final String DEFAULT_CATEGORY_LABEL_TEXT="Категории:";
+	
+	private static final Color COLOR_GREEN = new Color(54,100,26);
 
 	private Order order;
 
@@ -63,31 +85,95 @@ public class OrderTab extends JPanel {
 	private PrintingService printService;
 	
 	private boolean categoriesDisplay = true;
+	
+	private JLabel categoryNameLabel;
+	
+	private JTextField itemSearchField;
+	
+	private JPanel northPanel;
+		
+	private JPanel getNorthPanel(){
+		if (northPanel == null) {
+			MigLayout layout = new MigLayout("fillx, insets n n 0 n","","center");
 
+			northPanel= new JPanel(layout);
+			northPanel.add(getCategoryNameLabel(),"gapleft 3, align left");
+			northPanel.add(getItemSearchField()," align right, split 2");
+			
+			JButton btnClear = new JButton(AbstractForm.createImageIcon("clear_left.png"));
+			btnClear.setToolTipText("Очистить поле");
+			btnClear.setMargin(new Insets(0, 0, 0, 0));
+			btnClear.setBorderPainted(false);
+			
+			btnClear.addActionListener(new AbstractAction() {
+				public void actionPerformed(ActionEvent arg0) {
+					getItemSearchField().setText("");	
+					getItemSearchField().requestFocus();
+				}
+			});
+			
+			northPanel.add(btnClear," align right, gapleft 0, width 24!");
+
+		}
+		northPanel.doLayout();
+		return northPanel;		
+	}
+	
+	private JTextField getItemSearchField(){
+		if (itemSearchField == null) {
+			itemSearchField = new QuickSearchTextField("Быстрый поиск (Ctrl+F)");
+			Dimension size = itemSearchField.getPreferredSize();
+			size.setSize(size.getWidth()+20, size.getHeight());
+			itemSearchField.setPreferredSize(size);
+			itemSearchField.addKeyListener(new QuickSearchListener());
+
+			InputMap im = getInputMap(WHEN_IN_FOCUSED_WINDOW);
+			ActionMap am = getActionMap();
+			im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK, true), "ctrl+f");
+			am.put("ctrl+f", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					getItemSearchField().requestFocus();
+				}
+			});
+		}
+		return itemSearchField;
+	}
+	
+	private JLabel getCategoryNameLabel(){
+		if(categoryNameLabel==null){
+			categoryNameLabel = new JLabel(DEFAULT_CATEGORY_LABEL_TEXT);
+			categoryNameLabel.setForeground(COLOR_GREEN);
+			categoryNameLabel.setFont(categoryNameLabel.getFont().deriveFont(18.0f));
+		}
+		return categoryNameLabel;
+	}
+	
 	public OrderTab(Order order, OrderTabListener tabListener) {
 		this.order = order;
 		this.tabListener = tabListener;
 
 		AnnotationProcessor.process(this);
-
+		
 		printService = WaiterInstance.forId(WaiterInstance.PRINTING_SERVICE);
 
 		categoryService = WaiterInstance.forId(WaiterInstance.CATEGORY_SERVICE);
 		categories = categoryService.getAllSortedAsOutputElements();
 
 		setLayout(new MigLayout("insets 5", "[fill,grow]", "[fill,grow]"));
-
+		
 		scrollPaneItems = new JScrollPane(
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(scrollPaneItems, "width 660!");
-
+						
 		panelItems = new JPanel();
 		displayCategories();
 		scrollPaneItems.setViewportView(panelItems);
 
 		add(createReceiptPanel());
 	}
+	
 
 	/**
 	 * @return Panel for receipt table
@@ -122,9 +208,20 @@ public class OrderTab extends JPanel {
 
 		JButton btnPrintOrder = new JButton("Печать");
 		btnPrintOrder.setToolTipText("Напечатать отдельные квитанции заказа");
-		panel.add(btnPrintOrder, "w 80::");
+		panel.add(btnPrintOrder, "split 2, w 80::");
 		btnPrintOrder.addActionListener(new PrintOrderListener());
 		btnPrintOrder.setIcon(AbstractForm.createImageIcon("fileprint.png"));
+		
+		JButton btnDiscount = new JButton("Скидка");
+		btnDiscount.setToolTipText("Сделать скидку");
+		panel.add(btnDiscount, "w 80::");
+		btnDiscount.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+				new DiscountDialog(SwingUtilities.windowForComponent(OrderTab.this), order);				
+			}
+		});
+		btnDiscount.setIcon(AbstractForm.createImageIcon("discount16.png"));
 
 		JButton btnCloseOrder = new JButton("Чек");
 		btnCloseOrder.setToolTipText("Напечатать чек и закрыть заказ");
@@ -166,16 +263,22 @@ public class OrderTab extends JPanel {
 		layoutButtonConstraint.append(ITEM_BUTTON_WIDTH).append("!, height ")
 				.append(ITEM_BUTTON_HEIGHT).append("!");
 		
+		if (categoriesDisplay) {
+			getCategoryNameLabel().setText(DEFAULT_CATEGORY_LABEL_TEXT);
+		}
+
+		contentPane.add(getNorthPanel(),"dock north, width 630!");
+		
 		if (!categoriesDisplay) {
 			JButton button = createBackToCategoriesButton();
 			contentPane.add(button);
 		}
-
+				
 		for (OutputElement outputElement : elems) {
 			JButton button = createItemButton(outputElement);
 			contentPane.add(button, layoutButtonConstraint.toString());
 		}
-
+		
 		contentPane.doLayout();
 		scrollPaneItems.doLayout();
 		contentPane.repaint();
@@ -262,8 +365,9 @@ public class OrderTab extends JPanel {
 			if (Category.class.isAssignableFrom(outputElement.getClass())) {
 				// Displaying category items
 				categoriesDisplay = false;
-				updateItemsPane(panelItems, new TreeSet<OutputElement>(
-						((Category) outputElement).getItems()));
+				Category category = (Category) outputElement;
+				getCategoryNameLabel().setText(category.getName()+":");
+				updateItemsPane(panelItems, new TreeSet<OutputElement>(category.getItems()));
 				tabListener.categoryDisplayed(OrderTab.this);
 			} else {
 				// Adding item to the receipt
@@ -300,13 +404,59 @@ public class OrderTab extends JPanel {
 	private class PrintOrderListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+
+			boolean printUpdatesOnly = false;
+			
+			if(order.isPrinted() && order.isUpdated()){	
+				Object[] options = {"Только изменения", "Весь заказ","Отмена"};
+				int choise = JOptionPane.showOptionDialog(
+						OrderTab.this,
+						"Распечатать только последние изменения в заказе?", 
+						"Заказ " + OrderTab.this.order.getTitle(), 
+						JOptionPane.YES_NO_CANCEL_OPTION, 
+						JOptionPane.QUESTION_MESSAGE, 
+						AbstractForm.createImageIcon("receipt_print_question.png"),
+						options,options[0]);
+				
+				switch (choise){
+					//Only changes option
+					case 0: 
+						printUpdatesOnly = true;
+						break;
+					//Cancel option
+					case 2: 
+						return; 
+				}
+			}
+						
 			if (!order.getItems().isEmpty()) {
-				printService.printOrder(order);
+				if(printService.printOrder(order,printUpdatesOnly)){
+					processOrderAfterPrinting(order);
+					tabListener.orderPrinted(OrderTab.this);
+				}
 			} else {
 				JOptionPane.showMessageDialog(OrderTab.this,
 						"Добавьте элементы в заказ, чтобы их распечатать.",
 						"Печатать нечего :(", JOptionPane.ERROR_MESSAGE);
 			}
+		}
+	}
+	
+	/**
+	 * Updates OrderedItem entities after printing
+	 * @param order
+	 */
+	private void processOrderAfterPrinting(Order order) {
+		OrderedItemService orderedItemService = WaiterInstance.forId(WaiterInstance.ORDERED_ITEM_SERVICE);
+		try{
+			for(OrderedItem item: order.getItems()){
+					orderedItemService.save(item);
+			}
+		} catch (Exception e){
+			log.error("Failed to update ordered items after printing for order: " + order, e);
+			JOptionPane.showMessageDialog(null, e.getLocalizedMessage(),
+					"Не получилось обновить заказ после печати :(",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -374,12 +524,73 @@ public class OrderTab extends JPanel {
 			log.error("Order in the event is NULL");
 		}
 	}
+	
 
 	/**
 	 * @return the categoriesDisplay
 	 */
 	public boolean isCategoriesDisplay() {
 		return categoriesDisplay;
+	}
+	
+	
+	private class QuickSearchListener implements KeyListener{
+
+		@Override
+		public void keyPressed(KeyEvent arg0) {
+			if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
+				JButton foundButton = null;
+				for(Component comp: panelItems.getComponents()){
+					if(comp instanceof JButton){
+						JButton btn = (JButton) comp;
+						if(btn.getText().toLowerCase().contains(getItemSearchField().getText().toLowerCase())){
+							foundButton = btn;
+							break;
+						}
+					}
+				}
+				
+				if(foundButton == null) {
+					return;
+				}
+				
+				foundButton.setBorder(BorderFactory.createLineBorder(COLOR_GREEN,3));
+				foundButton.repaint();
+				foundButton.requestFocus();
+				
+				final JButton btnForThread = foundButton;
+				
+				Thread t = new Thread(){
+					public void run(){
+						try {
+							sleep(3000);
+						} catch (InterruptedException e) {}
+						
+						EventQueue.invokeLater(new Runnable() {
+							public void run() {
+								btnForThread.setBorder(null);
+								btnForThread.repaint();
+							}
+						});
+					}
+				};
+				
+				t.start();
+				
+			}
+			
+		}
+
+		@Override
+		public void keyReleased(KeyEvent arg0) {
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent arg0) {
+						
+		}
+		
 	}
 
 }
