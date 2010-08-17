@@ -80,7 +80,7 @@ public interface OrderService extends GenericService<Order> {
 	 * @return collection of orders
 	 */
 	public Collection<Order> getOrdersForRange(Calendar from, Calendar to,
-			User waiter, Boolean closed);
+			User waiter, Boolean closed, Boolean forDeletion);
 
 	/**
 	 * Getting report for the specified date range. If <code>from</code> date is
@@ -104,7 +104,7 @@ public interface OrderService extends GenericService<Order> {
 	 * @return Report object
 	 */
 	public OrderReport getOrderReport(Calendar from, Calendar to, User waiter,
-			Boolean closed);
+			Boolean closed, Boolean forDeletion);
 
 	/**
 	 * Getting all table numbers that are occupied now, not including bar and

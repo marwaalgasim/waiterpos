@@ -25,7 +25,7 @@ public class ColumnMarkDelRenderer extends BooleanColumnRenderer {
 		TableModelOrders tableModel = (TableModelOrders) table.getModel();
 		Order order = tableModel.getOrderAt(modelRow);
 		if (order.isForDeletion()) {
-			((JLabel)rez).setToolTipText("<html><b>Причина для удаления:</b><br/>" + 
+			((JLabel)rez).setToolTipText("<html><b>Причина для отмены/удаления:</b><br/>" + 
 					order.getForDeletionReason()+"</html>");
 		} else {
 			((JLabel)rez).setToolTipText(null);

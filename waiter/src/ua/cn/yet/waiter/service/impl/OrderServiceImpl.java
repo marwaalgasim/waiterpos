@@ -112,8 +112,9 @@ public class OrderServiceImpl extends GenericServiceImpl<Order> implements
 	 */
 	@Override
 	public Collection<Order> getOrdersForRange(Calendar from, Calendar to,
-			User waiter, Boolean closed) {
-		if ((null == from) && (null == waiter) && (null == closed)) {
+			User waiter, Boolean closed, Boolean forDeletion) {
+		if ((null == from) && (null == waiter) 
+				&& (null == closed) && (null == forDeletion)) {
 			return getAllEntites();
 		}
 
@@ -150,6 +151,13 @@ public class OrderServiceImpl extends GenericServiceImpl<Order> implements
 			}
 			query += String.format(Order.CONDITION_CLOSED, closed.toString());
 		}
+		
+		if (forDeletion != null) {
+			if (params.length > 0) {
+				query += Order.CONDITION_AND;
+			}
+			query += String.format(Order.CONDITION_FOR_DELETION, forDeletion.toString());
+		}
 
 		return executeQuery(query, false, false, params);
 	}
@@ -163,21 +171,23 @@ public class OrderServiceImpl extends GenericServiceImpl<Order> implements
 	 */
 	@Override
 	public OrderReport getOrderReport(Calendar from, Calendar to, User waiter,
-			Boolean closed) {
+			Boolean closed, Boolean forDeletion) {
 		if ((null != from) && (null == to)) {
 			Calendar[] dates = Utils.getFullDayRangeForDate(from);
 			from = dates[0];
 			to = dates[1];
 		}
 
-		Collection<Order> orders = getOrdersForRange(from, to, waiter, closed);
+		Collection<Order> orders = getOrdersForRange(from, to, waiter, closed, forDeletion);
 
 		OrderReport report = new OrderReport(from, to);
 		report.setWaiter(waiter);
 		report.setOnlyClosed(closed);
-
+		
 		for (Order order : orders) {
-			report.addOrder(order);
+			if(!order.isCanceled() || forDeletion){
+				report.addOrder(order);
+			}
 		}
 
 		return report;

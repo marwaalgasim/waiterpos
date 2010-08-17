@@ -20,6 +20,9 @@
 	<property name="appName" value="waiter" />
 	<property name="jarFile" value="${dist.libs}/${appName}.jar" />
 	<property name="manifest" value="${dist}/MANIFEST.MF" />
+	<property name="src.test.dir" value="test" />
+	<property name="build.test.dir" value="bin" />
+	<property name="test.mask" value="Test*"/>
 
 	<property environment="env" />
 
@@ -155,4 +158,29 @@
 
 		<echo message="Distribution files located in ${dist}" />
 	</target>
+	
+	<target name="build.test" depends="build">
+		<mkdir dir="${build.test.dir}"/>
+		<javac destdir="${build.test.dir}">
+			<src path="${src.test.dir}"/>
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+	
+	<target name="test" depends="build.test">
+		<junit printsummary="yes" haltonerror="yes" haltonfailure="yes" fork="yes">
+			<formatter type="plain" usefile="false"/>
+			<batchtest>
+				<fileset dir="${src.test.dir}">
+					<include name="**/${test.mask}.java"/>
+				</fileset>
+			</batchtest>
+			<classpath refid="project.classpath"/>
+			<classpath>
+				<pathelement location="${build.test.dir}"/>
+			</classpath>
+		</junit>
+	</target>
+	
+	
 </project>

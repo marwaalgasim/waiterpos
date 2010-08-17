@@ -15,6 +15,7 @@ public final class WaiterInstance {
 	public static final String ORDER_SERVICE = "orderService";
 	public static final String ORDERED_ITEM_SERVICE = "orderedItemService";
 	public static final String PRINTING_SERVICE = "printingService";
+	public static final String LOGGED_CHANGE_SERVICE = "loggedChangeService";
 	
 	private static WaiterInstance instance = new WaiterInstance();
 	private ApplicationContext ac;

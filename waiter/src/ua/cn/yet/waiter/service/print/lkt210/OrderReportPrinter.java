@@ -59,13 +59,24 @@ class OrderReportPrinter extends LKT210Printer {
 
 		sb = new StringBuilder();
 		sb.append("Заказы: ");
-		if (report.isClosedAndOpenIncluded()) {
+		if (report.isAllIncluded()) {
 			sb.append("Все");
-		} else if (report.getOnlyClosed().booleanValue()) {
-			sb.append("Закрытые");
-		} else {
-			sb.append("Открытые");
+		} else if (report.getOnlyClosed() != null) {
+			
+			if(report.getOnlyClosed()){
+				sb.append("Закрытые");
+			} else {
+				sb.append("Открытые");
+			} 
+		} else if (report.getOnlyDeleted() != null) {
+			
+			if (report.getOnlyDeleted()) {
+				sb.append("Удаленные/отмененные");
+			} else {
+				sb.append("Без удаленных/отмененных");
+			}	
 		}
+		
 		drawCentered(g2d, sb.toString(), line, pageWidth);
 		line += lineHeight;
 

@@ -75,6 +75,10 @@
 	</bean>
 	
 	<bean name="printingService" class="ua.cn.yet.waiter.service.print.lkt210.PrintServiceLKT210"/>
+	
+	<bean name="loggedChangeService" class="ua.cn.yet.waiter.service.impl.LoggedChangeServiceImpl">
+		<property name="jpaTemplate" ref="jpaTemplate" />
+	</bean>
 
 	<!--
 		*****************************************************************************************
@@ -82,3 +86,4 @@
 
 
 </beans>
+	

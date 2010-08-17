@@ -50,7 +50,7 @@ public class TableModelOrderReport extends AbstractTableModel {
 	 */
 	@Override
 	public int getRowCount() {
-		return 2;
+		return 4;
 	}
 
 	/*
@@ -82,6 +82,25 @@ public class TableModelOrderReport extends AbstractTableModel {
 			} else if (1 == rowIndex) {
 				switch (columnIndex) {
 				case COLUMN_HEAD:
+					return "Без удал./отм.";
+				case COLUMN_COUNT:
+					return report.getTotalOrders() - report.getTotalDelOrders();
+				case COLUMN_FOOD:
+					return String.format("%.2f грн.",
+							report.getTotalsForType(ItemType.FOOD) - report.getTotalsForTypeDelOrders(ItemType.FOOD));
+				case COLUMN_BAR:
+					return String.format("%.2f грн.",
+							report.getTotalsForBar() - report.getTotalsForBarDelOrders());
+				case COLUMN_ALCOHOL:
+					return String.format("%.2f грн.",
+							report.getTotalsForType(ItemType.ALCOHOL) - report.getTotalsForTypeDelOrders(ItemType.ALCOHOL));
+				case COLUMN_TOTAL:
+					return String.format("%.2f грн.",
+							report.getTotalSum() - report.getTotalSumDelOrders());
+				}
+			}else if (2 == rowIndex) {
+				switch (columnIndex) {
+				case COLUMN_HEAD:
 					return "Открытых";
 				case COLUMN_COUNT:
 					return report.getTotalOpenOrdersStr();
@@ -100,6 +119,29 @@ public class TableModelOrderReport extends AbstractTableModel {
 				case COLUMN_TOTAL:
 					if (report.getTotalOpenOrders() > 0) {
 						return report.getTotalSumOpenOrdersStr();
+					}
+				}
+			} else if (3 == rowIndex) {
+				switch (columnIndex) {
+				case COLUMN_HEAD:
+					return "Удаленных/отмененных";
+				case COLUMN_COUNT:
+					return report.getTotalDelOrdersStr();
+				case COLUMN_FOOD:
+					if (report.getTotalDelOrders() > 0) {
+						return report.getTotalsForTypeDelOrdersStr(ItemType.FOOD);
+					}
+				case COLUMN_BAR:
+					if (report.getTotalDelOrders() > 0) {
+						return report.getTotalsForBarDelOrdersStr();
+					}
+				case COLUMN_ALCOHOL:
+					if (report.getTotalDelOrders() > 0) {
+						return report.getTotalsForTypeDelOrdersStr(ItemType.ALCOHOL);
+					}
+				case COLUMN_TOTAL:
+					if (report.getTotalDelOrders() > 0) {
+						return report.getTotalSumDelOrdersStr();
 					}
 				}
 			}

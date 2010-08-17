@@ -49,7 +49,7 @@ abstract class LKT210Printer implements Printable {
 	@Override
 	public int print(Graphics graphics, PageFormat pageFormat, int page)
 			throws PrinterException {
-		
+
 		if (page >= getMaxPageCount()) {
 			return NO_SUCH_PAGE;
 		}

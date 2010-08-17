@@ -1,0 +1,136 @@
+INFO  2010-08-17 16:28:02,012 ClassPathXmlApplicationContext:prepareRefresh - Refreshing org.springframework.context.support.ClassPathXmlApplicationContext@860d49: display name [org.springframework.context.support.ClassPathXmlApplicationContext@860d49]; startup date [Tue Aug 17 16:28:01 EEST 2010]; root of context hierarchy
+INFO  2010-08-17 16:28:02,181 XmlBeanDefinitionReader:loadBeanDefinitions - Loading XML bean definitions from class path resource [spring_config.xml]
+INFO  2010-08-17 16:28:02,980 ClassPathXmlApplicationContext:obtainFreshBeanFactory - Bean factory for application context [org.springframework.context.support.ClassPathXmlApplicationContext@860d49]: org.springframework.beans.factory.support.DefaultListableBeanFactory@1e57e8f
+INFO  2010-08-17 16:28:03,081 PropertyPlaceholderConfigurer:loadProperties - Loading properties file from class path resource [db.connect.properties]
+INFO  2010-08-17 16:28:03,128 DefaultListableBeanFactory:preInstantiateSingletons - Pre-instantiating singletons in org.springframework.beans.factory.support.DefaultListableBeanFactory@1e57e8f: defining beans [propertyConfigurer,entityManagerFactory,jpaTemplate,jpaDialect,transactionManager,org.springframework.aop.config.internalAutoProxyCreator,org.springframework.transaction.annotation.AnnotationTransactionAttributeSource#0,org.springframework.transaction.interceptor.TransactionInterceptor#0,org.springframework.transaction.config.internalTransactionAdvisor,annotationTransactionAspect,categoryService,itemService,userService,orderService,orderedItemService,printingService,loggedChangeService]; root of factory hierarchy
+INFO  2010-08-17 16:28:03,139 LocalEntityManagerFactoryBean:createNativeEntityManagerFactory - Building JPA EntityManagerFactory for persistence unit 'waiter'
+INFO  2010-08-17 16:28:03,204 Version:<clinit> - Hibernate Annotations 3.4.0.GA
+INFO  2010-08-17 16:28:03,241 Environment:<clinit> - Hibernate 3.3.1.GA
+INFO  2010-08-17 16:28:03,246 Environment:<clinit> - hibernate.properties not found
+INFO  2010-08-17 16:28:03,250 Environment:buildBytecodeProvider - Bytecode provider name : javassist
+INFO  2010-08-17 16:28:03,255 Environment:<clinit> - using JDK 1.4 java.sql.Timestamp handling
+INFO  2010-08-17 16:28:03,314 Version:<clinit> - Hibernate Commons Annotations 3.1.0.GA
+INFO  2010-08-17 16:28:03,318 Version:<clinit> - Hibernate EntityManager 3.4.0.GA
+INFO  2010-08-17 16:28:03,771 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.Category
+INFO  2010-08-17 16:28:03,843 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.Category on table Category
+INFO  2010-08-17 16:28:03,960 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.Item
+INFO  2010-08-17 16:28:03,961 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.Item on table Item
+INFO  2010-08-17 16:28:03,974 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.User
+INFO  2010-08-17 16:28:03,976 QueryBinder:bindQuery - Binding Named query: userByLoginAndPass => SELECT x FROM User x WHERE x.username = ?1 AND x.password = ?2
+INFO  2010-08-17 16:28:03,977 QueryBinder:bindQuery - Binding Named query: getAllNonAdmins => SELECT x FROM User x WHERE x.admin = false ORDER BY x.fullName
+INFO  2010-08-17 16:28:03,978 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.User on table usr
+INFO  2010-08-17 16:28:03,983 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.Order
+INFO  2010-08-17 16:28:03,984 QueryBinder:bindQuery - Binding Named query: getOpenOrdersByUser => SELECT x FROM Order x WHERE x.waiter = ?1 AND x.closed = false AND x.canceled = false
+INFO  2010-08-17 16:28:03,985 QueryBinder:bindQuery - Binding Named query: getClosedOrdersByUser => SELECT x FROM Order x WHERE x.waiter = ?1 AND x.closed = true
+INFO  2010-08-17 16:28:03,985 QueryBinder:bindQuery - Binding Named query: getAllOrdersByUser => SELECT x FROM Order x WHERE x.waiter = ?1
+INFO  2010-08-17 16:28:03,986 QueryBinder:bindQuery - Binding Named query: removeUserFromUserOrders => UPDATE Order x SET x.waiter = null WHERE x.waiter = ?1
+INFO  2010-08-17 16:28:03,987 QueryBinder:bindQuery - Binding Named query: getAllOccupiedTableNumbers => SELECT x.tableNumber FROM Order x WHERE x.closed = false AND x.canceled=false
+INFO  2010-08-17 16:28:03,988 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.Order on table ordr
+INFO  2010-08-17 16:28:04,008 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.OrderedItem
+INFO  2010-08-17 16:28:04,010 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.OrderedItem on table OrderedItem
+INFO  2010-08-17 16:28:04,022 AnnotationBinder:bindClass - Binding entity from annotated class: ua.cn.yet.waiter.model.LoggedChange
+INFO  2010-08-17 16:28:04,023 EntityBinder:bindTable - Bind entity ua.cn.yet.waiter.model.LoggedChange on table logged_changes
+INFO  2010-08-17 16:28:04,085 CollectionBinder:bindOneToManySecondPass - Mapping collection: ua.cn.yet.waiter.model.Order.changes -> logged_changes
+INFO  2010-08-17 16:28:04,086 CollectionBinder:bindOneToManySecondPass - Mapping collection: ua.cn.yet.waiter.model.Order.items -> OrderedItem
+INFO  2010-08-17 16:28:04,091 Version:<clinit> - Hibernate Validator 3.1.0.GA
+INFO  2010-08-17 16:28:04,141 HibernateSearchEventListenerRegister:enableHibernateSearch - Unable to find org.hibernate.search.event.FullTextIndexEventListener on the classpath. Hibernate Search is not enabled.
+INFO  2010-08-17 16:28:04,159 DriverManagerConnectionProvider:configure - Using Hibernate built-in connection pool (not for production use!)
+INFO  2010-08-17 16:28:04,160 DriverManagerConnectionProvider:configure - Hibernate connection pool size: 20
+INFO  2010-08-17 16:28:04,160 DriverManagerConnectionProvider:configure - autocommit mode: true
+INFO  2010-08-17 16:28:04,820 DriverManagerConnectionProvider:configure - using driver: org.apache.derby.jdbc.EmbeddedDriver at URL: jdbc:derby:db;create=true
+INFO  2010-08-17 16:28:04,821 DriverManagerConnectionProvider:configure - connection properties: {user=sa, password=****, autocommit=true, release_mode=auto}
+INFO  2010-08-17 16:28:05,565 SettingsFactory:buildSettings - RDBMS: Apache Derby, version: 10.4.2.0 - (689064)
+INFO  2010-08-17 16:28:05,565 SettingsFactory:buildSettings - JDBC driver: Apache Derby Embedded JDBC Driver, version: 10.4.2.0 - (689064)
+INFO  2010-08-17 16:28:05,579 Dialect:<init> - Using dialect: org.hibernate.dialect.DerbyDialect
+INFO  2010-08-17 16:28:05,586 TransactionFactoryFactory:buildTransactionFactory - Transaction strategy: org.hibernate.transaction.JDBCTransactionFactory
+INFO  2010-08-17 16:28:05,588 TransactionManagerLookupFactory:getTransactionManagerLookup - No TransactionManagerLookup configured (in JTA environment, use of read-write or transactional second-level cache is not recommended)
+INFO  2010-08-17 16:28:05,589 SettingsFactory:buildSettings - Automatic flush during beforeCompletion(): disabled
+INFO  2010-08-17 16:28:05,589 SettingsFactory:buildSettings - Automatic session close at end of transaction: disabled
+INFO  2010-08-17 16:28:05,590 SettingsFactory:buildSettings - Scrollable result sets: enabled
+INFO  2010-08-17 16:28:05,590 SettingsFactory:buildSettings - JDBC3 getGeneratedKeys(): disabled
+INFO  2010-08-17 16:28:05,591 SettingsFactory:buildSettings - Connection release mode: auto
+INFO  2010-08-17 16:28:05,592 SettingsFactory:buildSettings - Default batch fetch size: 1
+INFO  2010-08-17 16:28:05,592 SettingsFactory:buildSettings - Generate SQL with comments: disabled
+INFO  2010-08-17 16:28:05,592 SettingsFactory:buildSettings - Order SQL updates by primary key: disabled
+INFO  2010-08-17 16:28:05,593 SettingsFactory:buildSettings - Order SQL inserts for batching: disabled
+INFO  2010-08-17 16:28:05,593 SettingsFactory:createQueryTranslatorFactory - Query translator: org.hibernate.hql.ast.ASTQueryTranslatorFactory
+INFO  2010-08-17 16:28:05,595 ASTQueryTranslatorFactory:<init> - Using ASTQueryTranslatorFactory
+INFO  2010-08-17 16:28:05,596 SettingsFactory:buildSettings - Query language substitutions: {}
+INFO  2010-08-17 16:28:05,598 SettingsFactory:buildSettings - JPA-QL strict compliance: enabled
+INFO  2010-08-17 16:28:05,599 SettingsFactory:buildSettings - Second-level cache: enabled
+INFO  2010-08-17 16:28:05,599 SettingsFactory:buildSettings - Query cache: disabled
+INFO  2010-08-17 16:28:05,600 SettingsFactory:createRegionFactory - Cache region factory : org.hibernate.cache.impl.NoCachingRegionFactory
+INFO  2010-08-17 16:28:05,600 SettingsFactory:buildSettings - Optimize cache for minimal puts: disabled
+INFO  2010-08-17 16:28:05,601 SettingsFactory:buildSettings - Structured second-level cache entries: disabled
+INFO  2010-08-17 16:28:05,607 SettingsFactory:buildSettings - Statistics: disabled
+INFO  2010-08-17 16:28:05,607 SettingsFactory:buildSettings - Deleted entity synthetic identifier rollback: disabled
+INFO  2010-08-17 16:28:05,608 SettingsFactory:buildSettings - Default entity-mode: pojo
+INFO  2010-08-17 16:28:05,609 SettingsFactory:buildSettings - Named query checking : enabled
+INFO  2010-08-17 16:28:05,694 SessionFactoryImpl:<init> - building session factory
+INFO  2010-08-17 16:28:06,109 SessionFactoryObjectFactory:addInstance - Not binding factory to JNDI, no JNDI name configured
+INFO  2010-08-17 16:28:06,116 SchemaUpdate:execute - Running hbm2ddl schema update
+INFO  2010-08-17 16:28:06,116 SchemaUpdate:execute - fetching database metadata
+INFO  2010-08-17 16:28:06,121 SchemaUpdate:execute - updating schema
+INFO  2010-08-17 16:28:06,723 TableMetadata:<init> - table found: .SA.CATEGORY
+INFO  2010-08-17 16:28:06,724 TableMetadata:<init> - columns: [picture, id, name]
+INFO  2010-08-17 16:28:06,725 TableMetadata:<init> - foreign keys: []
+INFO  2010-08-17 16:28:06,726 TableMetadata:<init> - indexes: [sql100321130653420]
+INFO  2010-08-17 16:28:06,784 TableMetadata:<init> - table found: .SA.CATEGORY_ITEM
+INFO  2010-08-17 16:28:06,784 TableMetadata:<init> - columns: [items_id, category_id]
+INFO  2010-08-17 16:28:06,785 TableMetadata:<init> - foreign keys: [fk43be89b43623e3b7, fk43be89b4e850faa4]
+INFO  2010-08-17 16:28:06,785 TableMetadata:<init> - indexes: [sql100321130654150, sql100321130653650, sql100321130653651, sql100321130654350]
+INFO  2010-08-17 16:28:06,802 TableMetadata:<init> - table found: .SA.ITEM
+INFO  2010-08-17 16:28:06,802 TableMetadata:<init> - columns: [itemtype, picture, mass, id, price, name]
+INFO  2010-08-17 16:28:06,803 TableMetadata:<init> - foreign keys: []
+INFO  2010-08-17 16:28:06,803 TableMetadata:<init> - indexes: [sql100321130653930]
+INFO  2010-08-17 16:28:06,825 TableMetadata:<init> - table found: .SA.ORDEREDITEM
+INFO  2010-08-17 16:28:06,828 TableMetadata:<init> - columns: [mass, itemtype, id, price, count, newmass, name, order_id]
+INFO  2010-08-17 16:28:06,828 TableMetadata:<init> - foreign keys: [fke25d910056cd6590]
+INFO  2010-08-17 16:28:06,829 TableMetadata:<init> - indexes: [sql100405154141342, sql100405154143460]
+INFO  2010-08-17 16:28:06,831 DatabaseMetadata:getTableMetadata - table not found: logged_changes
+INFO  2010-08-17 16:28:06,849 TableMetadata:<init> - table found: .SA.ORDR
+INFO  2010-08-17 16:28:06,850 TableMetadata:<init> - columns: [id, fordeletion, closingdate, fordeletionreason, tablenumber, closed, creationdate, waiter_id]
+INFO  2010-08-17 16:28:06,850 TableMetadata:<init> - foreign keys: [fk342db1b6327c0d]
+INFO  2010-08-17 16:28:06,850 TableMetadata:<init> - indexes: [sql100405154142210, sql100405154144290]
+INFO  2010-08-17 16:28:06,862 TableMetadata:<init> - table found: .SA.USR
+INFO  2010-08-17 16:28:06,863 TableMetadata:<init> - columns: [id, username, admin, active, password, fullname]
+INFO  2010-08-17 16:28:06,863 TableMetadata:<init> - foreign keys: []
+INFO  2010-08-17 16:28:06,863 TableMetadata:<init> - indexes: [sql100405154142570]
+INFO  2010-08-17 16:28:06,865 DatabaseMetadata:getTableMetadata - table not found: logged_changes
+INFO  2010-08-17 16:28:06,876 TableMetadata:<init> - table found: .SA.HIBERNATE_UNIQUE_KEY
+INFO  2010-08-17 16:28:06,877 TableMetadata:<init> - columns: [next_hi]
+INFO  2010-08-17 16:28:06,877 TableMetadata:<init> - foreign keys: []
+INFO  2010-08-17 16:28:06,881 TableMetadata:<init> - indexes: []
+INFO  2010-08-17 16:28:07,327 SchemaUpdate:execute - schema update complete
+WARN  2010-08-17 16:28:07,330 JDBCExceptionReporter:logWarnings - SQL Warning: 10000, SQLState: 01J01
+WARN  2010-08-17 16:28:07,331 JDBCExceptionReporter:logWarnings - Database 'db' not created, connection made to existing database instead.
+INFO  2010-08-17 16:28:07,736 WaiterInstance:loadInstances - Waiter instances are loaded
+DEBUG 2010-08-17 16:39:24,711 UserServiceImpl:executeQuery - Executing query 'userByLoginAndPass' to return single result 'true'
+INFO  2010-08-17 16:39:26,065 UserServiceImpl:authenticateUser - Authenticating a. Result: true
+DEBUG 2010-08-17 16:39:26,474 OrderServiceImpl:executeQuery - Executing query 'getOpenOrdersByUser' to return single result 'false'
+DEBUG 2010-08-17 16:39:29,098 OrderServiceImpl:executeQuery - Executing query 'getClosedOrdersByUser' to return single result 'false'
+DEBUG 2010-08-17 16:39:47,619 OrderServiceImpl:executeQuery - Executing query 'getAllOccupiedTableNumbers' to return single result 'false'
+DEBUG 2010-08-17 16:39:48,866 OrderServiceImpl:save - Saving new entity: Order[id=<null>,table=Бар,waiter=a,created=17.08.10 16:39,closed=open,itemCount=0,sum=0.0,forDel=false]
+WARN  2010-08-17 16:39:49,109 JDBCExceptionReporter:logWarnings - SQL Warning: 10000, SQLState: 01J01
+WARN  2010-08-17 16:39:49,111 JDBCExceptionReporter:logWarnings - Database 'db' not created, connection made to existing database instead.
+DEBUG 2010-08-17 16:39:49,181 WaiterForm:actionPerformed - Created Order[id=5996544,table=Бар,waiter=a,created=17.08.10 16:39,closed=open,itemCount=0,sum=0.0,forDel=false]
+DEBUG 2010-08-17 16:39:49,230 OrderServiceImpl:executeQuery - Executing query 'getOpenOrdersByUser' to return single result 'false'
+DEBUG 2010-08-17 16:39:49,303 CategoryServiceImpl:executeQuery - Executing query 'SELECT x FROM Category x order by name asc' to return single result 'false'
+DEBUG 2010-08-17 16:40:04,778 OrderServiceImpl:executeQuery - Executing query 'getClosedOrdersByUser' to return single result 'false'
+DEBUG 2010-08-17 16:40:06,751 OrderServiceImpl:executeQuery - Executing query 'SELECT x FROM Order x WHERE  x.creationDate BETWEEN ?1 AND ?2  AND  x.forDeletion = false' to return single result 'false'
+DEBUG 2010-08-17 16:40:09,770 OrderServiceImpl:executeQuery - Executing query 'getAllOccupiedTableNumbers' to return single result 'false'
+DEBUG 2010-08-17 16:40:16,164 OrderedItemServiceImpl:save - Saving new entity: OrderedItem[id=<null>,name=Бутерброд с сельдью,price=5.0199,count=1,newMass=70,org price=501.99,org mass=70,order id=5996544,waiter=a,item type=FOOD]
+DEBUG 2010-08-17 16:40:16,755 OrderedItemServiceImpl:getEntityById - Getting entity OrderedItem by id 6029312
+DEBUG 2010-08-17 16:40:16,816 OrderedItemServiceImpl:save - Updating entity: OrderedItem[id=6029312,name=Бутерброд с сельдью,price=10.0398,count=2,newMass=70,org price=501.99,org mass=70,order id=5996544,waiter=a,item type=FOOD]
+DEBUG 2010-08-17 16:40:22,778 PrintServiceLKT210:printOrder - Printing Order[id=5996544,table=Бар,waiter=a,created=17.08.10 16:39,closed=open,itemCount=1,sum=10.0398,forDel=false]
+DEBUG 2010-08-17 16:40:25,944 OrderedItemServiceImpl:save - Updating entity: OrderedItem[id=6029312,name=Бутерброд с сельдью,price=10.0398,count=2,newMass=70,org price=501.99,org mass=70,order id=5996544,waiter=a,item type=FOOD]
+DEBUG 2010-08-17 16:40:26,158 OrderServiceImpl:save - Updating entity: Order[id=5996544,table=Бар,waiter=a,created=17.08.10 16:39,closed=open,itemCount=1,sum=10.0398,forDel=false]
+DEBUG 2010-08-17 16:40:29,962 OrderServiceImpl:save - Updating entity: Order[id=5996544,table=Бар,waiter=a,created=17.08.10 16:39,closed=open,itemCount=1,sum=10.0398,forDel=true,forDelReason=Неправильно сформированный заказ]
+DEBUG 2010-08-17 16:40:33,298 UserServiceImpl:executeQuery - Executing query 'userByLoginAndPass' to return single result 'true'
+INFO  2010-08-17 16:40:33,304 UserServiceImpl:authenticateUser - Authenticating b. Result: true
+DEBUG 2010-08-17 16:40:33,500 ItemServiceImpl:executeQuery - Executing query 'SELECT COUNT(x) FROM Item x' to return single result 'true'
+DEBUG 2010-08-17 16:40:33,524 CategoryServiceImpl:executeQuery - Executing query 'SELECT x FROM Category x order by name asc' to return single result 'false'
+DEBUG 2010-08-17 16:40:33,963 UserServiceImpl:executeQuery - Executing query 'SELECT x FROM User x' to return single result 'false'
+DEBUG 2010-08-17 16:40:34,416 UserServiceImpl:executeQuery - Executing query 'getAllNonAdmins' to return single result 'false'
+DEBUG 2010-08-17 16:40:34,790 OrderServiceImpl:executeQuery - Executing query 'SELECT x FROM Order x WHERE  x.creationDate BETWEEN ?1 AND ?2 ' to return single result 'false'
+INFO  2010-08-17 16:40:59,993 WaiterApp:cleanUpAndExit - Derby system shutdown.
