@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 
 import ua.cn.yet.waiter.model.Order;
 import ua.cn.yet.waiter.model.OrderedItem;
+import ua.cn.yet.waiter.util.Config;
 
 /**
  * Class that prints receipt from the order to the client
@@ -16,7 +17,7 @@ import ua.cn.yet.waiter.model.OrderedItem;
  */
 class ReceiptPrinter extends LKT210Printer {
 
-	private Order order;
+	private final Order order;
 
 	ReceiptPrinter(Order order) {
 		this.order = order;
@@ -45,7 +46,8 @@ class ReceiptPrinter extends LKT210Printer {
 		g2d.setFont(new Font("", Font.PLAIN, 10));
 		int lineHeight = g2d.getFontMetrics().getHeight();
 
-		drawCentered(g2d, "Бар \"Сова\"", line, pageWidth);
+		drawCentered(g2d, Config.getBundleValue("institution.name"), line,
+				pageWidth);
 		line += lineHeight;
 
 		StringBuilder sb = new StringBuilder();
@@ -100,46 +102,48 @@ class ReceiptPrinter extends LKT210Printer {
 				itemInfo.append("мг");
 				itemInfo.append(" x ");
 			}
-			
+
 			itemInfo.append(String.format("%.2f", item.getPriceBillsAndCoins()));
 			itemInfo.append(" грн.");
 
 			StringBuilder price = new StringBuilder();
-			price.append(String.format("%.2f", item
-					.getOrderedPriceBillAndCoins()));
+			price.append(String.format("%.2f",
+					item.getOrderedPriceBillAndCoins()));
 			price.append(" грн.");
 
-			drawLeftDotsRight(g2d, itemInfo.toString(), price.toString(),
-					line, pageWidth);
-		}	
-		
+			drawLeftDotsRight(g2d, itemInfo.toString(), price.toString(), line,
+					pageWidth);
+		}
+
 		if (order.getDiscount() > 0) {
-			
-			line += lineHeight*2;
-			
+
+			line += lineHeight * 2;
+
 			StringBuilder actualPrice = new StringBuilder();
 			actualPrice.append(String.format("%.2f", order.getSum(false)));
 			actualPrice.append(" грн.");
-			drawLeftDotsRight(g2d, "Сумма без скидки", actualPrice.toString(), line, pageWidth);
-			
+			drawLeftDotsRight(g2d, "Сумма без скидки", actualPrice.toString(),
+					line, pageWidth);
+
 			line += lineHeight;
-		
+
 			StringBuilder discount = new StringBuilder();
-			discount.append(String.format("%.2f грн. (%.0f", 
-					order.getSum(false)*order.getDiscount(), order.getDiscount()*100));
+			discount.append(String.format("%.2f грн. (%.0f",
+					order.getSum(false) * order.getDiscount(),
+					order.getDiscount() * 100));
 			discount.append("%)");
-			drawLeftDotsRight(g2d, "Скидка", discount.toString(), line, pageWidth);
-		
+			drawLeftDotsRight(g2d, "Скидка", discount.toString(), line,
+					pageWidth);
+
 		}
 
-		
 		g2d.setFont(new Font("", Font.BOLD, 8));
 		lineHeight = g2d.getFontMetrics().getHeight();
 
 		line += (int) (lineHeight * 0.5);
 		g2d.drawLine(0, line, pageWidth, line);
 		line += lineHeight;
-		
+
 		StringBuilder totalPrice = new StringBuilder();
 		totalPrice.append(String.format("%.2f", order.getSum(true)));
 		totalPrice.append(" грн.");
@@ -147,7 +151,9 @@ class ReceiptPrinter extends LKT210Printer {
 		drawLeftDotsRight(g2d, "ИТОГО:", totalPrice.toString(), line, pageWidth);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see ua.cn.yet.waiter.service.print.lkt210.LKT210Printer#willPrint()
 	 */
 	@Override

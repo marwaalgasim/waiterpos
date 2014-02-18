@@ -6,9 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public final class WaiterInstance {
-	
+
 	private static Log log = LogFactory.getLog(WaiterInstance.class);
-	
+
 	public static final String CATEGORY_SERVICE = "categoryService";
 	public static final String ITEM_SERVICE = "itemService";
 	public static final String USER_SERVICE = "userService";
@@ -16,14 +16,14 @@ public final class WaiterInstance {
 	public static final String ORDERED_ITEM_SERVICE = "orderedItemService";
 	public static final String PRINTING_SERVICE = "printingService";
 	public static final String LOGGED_CHANGE_SERVICE = "loggedChangeService";
-	
+
 	private static WaiterInstance instance = new WaiterInstance();
-	private ApplicationContext ac;
-	
+	private final ApplicationContext ac;
+
 	private WaiterInstance() {
 		ac = new ClassPathXmlApplicationContext("spring_config.xml");
 	}
-	
+
 	public static void loadInstances() {
 		if (instance != null) {
 			log.info("Waiter instances are loaded");
@@ -31,7 +31,7 @@ public final class WaiterInstance {
 			log.fatal("Waiter instances are NOT loaded");
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T> T forId(String id) {
 		if (instance.ac != null) {

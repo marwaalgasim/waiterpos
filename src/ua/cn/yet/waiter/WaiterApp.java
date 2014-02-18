@@ -18,6 +18,7 @@ import ua.cn.yet.waiter.ui.AbstractForm;
 import ua.cn.yet.waiter.ui.DBEditForm;
 import ua.cn.yet.waiter.ui.LoginForm;
 import ua.cn.yet.waiter.ui.WaiterForm;
+import ua.cn.yet.waiter.util.Config;
 import ua.cn.yet.waiter.util.InstanceLock;
 import ua.cn.yet.waiter.util.ProgramVersion;
 import ua.cn.yet.waiter.util.WaiterInstance;
@@ -35,7 +36,7 @@ public class WaiterApp implements LoginListener, FormListener {
 	private String appTitle;
 
 	/** Map of forms that are running and attached to user */
-	private Map<User, AbstractForm> runningForms = new HashMap<User, AbstractForm>();
+	private final Map<User, AbstractForm> runningForms = new HashMap<User, AbstractForm>();
 
 	private AbstractForm loginForm;
 
@@ -49,7 +50,12 @@ public class WaiterApp implements LoginListener, FormListener {
 	private void runApps() {
 		Locale.setDefault(new Locale("ru", "RU"));
 
-		appTitle = "Waiter " + ProgramVersion.getVersion();
+		StringBuilder appTitleBuilder = new StringBuilder("Waiter ");
+		appTitleBuilder.append(ProgramVersion.getVersion());
+		appTitleBuilder.append(" - ");
+		appTitleBuilder.append(Config.getBundleValue("institution.name"));
+
+		appTitle = appTitleBuilder.toString();
 
 		if (true) {
 			if (!InstanceLock.registerInstanceLock()) {
@@ -67,7 +73,7 @@ public class WaiterApp implements LoginListener, FormListener {
 	/**
 	 * Run login loginForm
 	 */
-	private void runLogin() {	
+	private void runLogin() {
 		loginForm = new LoginForm(appTitle, this, this);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -190,14 +196,13 @@ public class WaiterApp implements LoginListener, FormListener {
 	 * Cleaning up resources and exiting
 	 */
 	private void cleanUpAndExit() {
-		
+
 		try {
 			DriverManager.getConnection("jdbc:derby:;shutdown=true");
 		} catch (SQLException e1) {
 			log.info(e1.getLocalizedMessage());
 		}
-		
-		
+
 		System.exit(0);
 	}
 

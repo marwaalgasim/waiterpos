@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 
 import ua.cn.yet.waiter.model.ItemType;
 import ua.cn.yet.waiter.model.OrderReport;
+import ua.cn.yet.waiter.util.Config;
 
 /**
  * Printer to print order reports
@@ -15,7 +16,7 @@ import ua.cn.yet.waiter.model.OrderReport;
  */
 class OrderReportPrinter extends LKT210Printer {
 
-	private OrderReport report;
+	private final OrderReport report;
 
 	public OrderReportPrinter(OrderReport report) {
 		this.report = report;
@@ -44,7 +45,8 @@ class OrderReportPrinter extends LKT210Printer {
 		g2d.setFont(new Font("", Font.PLAIN, 10));
 		int lineHeight = g2d.getFontMetrics().getHeight();
 
-		drawCentered(g2d, "Бар \"Сова\"", line, pageWidth);
+		drawCentered(g2d, Config.getBundleValue("institution.name"), line,
+				pageWidth);
 		line += lineHeight;
 
 		StringBuilder sb = new StringBuilder();
@@ -62,21 +64,21 @@ class OrderReportPrinter extends LKT210Printer {
 		if (report.isAllIncluded()) {
 			sb.append("Все");
 		} else if (report.getOnlyClosed() != null) {
-			
-			if(report.getOnlyClosed()){
+
+			if (report.getOnlyClosed()) {
 				sb.append("Закрытые");
 			} else {
 				sb.append("Открытые");
-			} 
+			}
 		} else if (report.getOnlyDeleted() != null) {
-			
+
 			if (report.getOnlyDeleted()) {
 				sb.append("Удаленные/отмененные");
 			} else {
 				sb.append("Без удаленных/отмененных");
-			}	
+			}
 		}
-		
+
 		drawCentered(g2d, sb.toString(), line, pageWidth);
 		line += lineHeight;
 
@@ -106,53 +108,60 @@ class OrderReportPrinter extends LKT210Printer {
 	protected void printPage(int page, Graphics2D g2d, int line, int pageWidth) {
 		g2d.setFont(new Font("", Font.PLAIN, 8));
 		int lineHeight = g2d.getFontMetrics().getHeight();
-		
+
 		String ordersStr = report.getTotalOrdersStr();
-		if ((report.isClosedAndOpenIncluded()) && (report.getTotalOpenOrders() > 0)) {
+		if ((report.isClosedAndOpenIncluded())
+				&& (report.getTotalOpenOrders() > 0)) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(Открытых: ").append(report.getTotalOpenOrders())
-				.append(")  ").append(ordersStr);
+					.append(")  ").append(ordersStr);
 			ordersStr = sb.toString();
 		}
 		drawLeftDotsRight(g2d, "Заказов", ordersStr, line, pageWidth);
 		line += lineHeight;
-		
+
 		line += lineHeight;
-		
+
 		// Printing totals for types
-		
+
 		String totalsStr = report.getTotalsForTypeStr(ItemType.FOOD);
-		if ((report.isClosedAndOpenIncluded()) && (report.getTotalOpenOrders() > 0)) {
+		if ((report.isClosedAndOpenIncluded())
+				&& (report.getTotalOpenOrders() > 0)) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(").append(report.getTotalsForTypeOpenOrdersStr(ItemType.FOOD))
-				.append(")  ").append(totalsStr);
+			sb.append("(")
+					.append(report.getTotalsForTypeOpenOrdersStr(ItemType.FOOD))
+					.append(")  ").append(totalsStr);
 			totalsStr = sb.toString();
 		}
 		drawLeftDotsRight(g2d, "Кухня", totalsStr, line, pageWidth);
 		line += lineHeight;
-		
+
 		totalsStr = report.getTotalsForBarStr();
-		if ((report.isClosedAndOpenIncluded()) && (report.getTotalOpenOrders() > 0)) {
+		if ((report.isClosedAndOpenIncluded())
+				&& (report.getTotalOpenOrders() > 0)) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(").append(report.getTotalsForBarOpenOrdersStr())
-				.append(")  ").append(totalsStr);
+					.append(")  ").append(totalsStr);
 			totalsStr = sb.toString();
 		}
 		drawLeftDotsRight(g2d, "Бар", totalsStr, line, pageWidth);
 		line += lineHeight;
-		
+
 		totalsStr = report.getTotalsForTypeStr(ItemType.ALCOHOL);
-		if ((report.isClosedAndOpenIncluded()) && (report.getTotalOpenOrders() > 0)) {
+		if ((report.isClosedAndOpenIncluded())
+				&& (report.getTotalOpenOrders() > 0)) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(").append(report.getTotalsForTypeOpenOrdersStr(ItemType.ALCOHOL))
-				.append(")  ").append(totalsStr);
+			sb.append("(")
+					.append(report
+							.getTotalsForTypeOpenOrdersStr(ItemType.ALCOHOL))
+					.append(")  ").append(totalsStr);
 			totalsStr = sb.toString();
 		}
 		drawLeftDotsRight(g2d, "Алкоголь", totalsStr, line, pageWidth);
 		line += lineHeight;
-				
+
 		// Printing line and subtotals
-		
+
 		g2d.setFont(new Font("", Font.BOLD, 8));
 		lineHeight = g2d.getFontMetrics().getHeight();
 
@@ -161,16 +170,19 @@ class OrderReportPrinter extends LKT210Printer {
 		line += lineHeight;
 
 		totalsStr = report.getTotalSumStr();
-		if ((report.isClosedAndOpenIncluded()) && (report.getTotalOpenOrders() > 0)) {
+		if ((report.isClosedAndOpenIncluded())
+				&& (report.getTotalOpenOrders() > 0)) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(").append(report.getTotalSumOpenOrdersStr())
-				.append(")  ").append(totalsStr);
+					.append(")  ").append(totalsStr);
 			totalsStr = sb.toString();
 		}
 		drawLeftDotsRight(g2d, "ИТОГО:", totalsStr, line, pageWidth);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see ua.cn.yet.waiter.service.print.lkt210.LKT210Printer#willPrint()
 	 */
 	@Override
