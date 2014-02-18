@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -14,28 +15,34 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import ua.cn.yet.common.ui.Utf8ResourceBundle;
+
 /**
  * Class that loads configuration from the properties file
  * 
  * @author Yuriy Tkach
  */
 public class Config {
-	
+
 	public static final String SHOW_PRINT_DIALOG = "show.print.dialog";
 	public static final String SET_PRINT_CLIPPING = "set.print.clipping";
 	public static final String SHOW_CHANGE_COUNT_ON_ORDER_CLOSE = "show.change.count.on.order.close";
-	public static final String TABLE_COUNT="table.count";
-	public static final String TABLE_COL_COUNT="table.col.count";
-	public static final String DISCOUNT_VALUES="discount.values";
+	public static final String TABLE_COUNT = "table.count";
+	public static final String TABLE_COL_COUNT = "table.col.count";
+	public static final String DISCOUNT_VALUES = "discount.values";
 
 	private static Log log = LogFactory.getLog(Config.class);
 
 	private static Config instance = new Config();
 
-	private Properties props = new Properties();
+	private final Properties props = new Properties();
+
+	private final ResourceBundle resourceBundle;
 
 	private Config() {
 		init();
+		resourceBundle = Utf8ResourceBundle.getBundle("strings");
+		log.debug("Loaded resource bundle for: strings.properties");
 	}
 
 	/**
@@ -58,10 +65,13 @@ public class Config {
 				IOUtils.closeQuietly(is);
 			}
 		} else {
-			log
-					.error("Configuration directory is not specified in system properties."
-							+ "Add -DconfigDir=[dir] parameter to the program arguments.");
+			log.error("Configuration directory is not specified in system properties."
+					+ "Add -DconfigDir=[dir] parameter to the program arguments.");
 		}
+	}
+
+	public static String getBundleValue(String key) {
+		return instance.resourceBundle.getString(key);
 	}
 
 	/**
@@ -86,7 +96,7 @@ public class Config {
 		String val = getString(key);
 		return BooleanUtils.toBoolean(val);
 	}
-	
+
 	/**
 	 * Getting integer value for the configuration key
 	 * 
@@ -98,7 +108,7 @@ public class Config {
 		String val = getString(key);
 		return NumberUtils.toInt(val);
 	}
-	
+
 	/**
 	 * Getting double value for the configuration key
 	 * 
